@@ -9,21 +9,18 @@
 namespace Lox {
 
 Maybe<Expr> GroupParseRule::parse(Parser* parser, Token token) const {
-  INFO("parse group: {}", token.toString());
   auto ret = JUST(parser->parsePrecedence(Precedence::None));
   JUST(parser->consume(TokenType::RIGHT_PAREN, "Expect ')' after expression"));
   return ret;
 }
 
 Maybe<Expr> UnaryParseRule::parse(Parser* parser, Token token) const {
-  INFO("parse unary: {}", token.toString());
   auto expr = JUST(parser->parsePrecedence(token.precedence));
   ExprPtr ret = std::make_shared<Unary>(token, expr);
   return ret;
 }
 
 Maybe<Expr> LiteralParseRule::parse(Parser* parser, Token token) const {
-  INFO("parse Literal: {}", token.toString());
   ExprPtr ret;
   if (TokenType::INT == token.type) {
     ret = std::make_shared<Literal>(boost::lexical_cast<int64_t>(token.lexeme),
@@ -44,7 +41,6 @@ Maybe<Expr> LiteralParseRule::parse(Parser* parser, Token token) const {
 }
 
 Maybe<Expr> VariableParseRule::parse(Parser* parser, Token token) const {
-  INFO("parse Var: {}", token.toString());
   ExprPtr ret = std::make_shared<Variable>(token);
   return ret;
 }

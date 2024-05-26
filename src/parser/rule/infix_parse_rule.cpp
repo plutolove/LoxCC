@@ -8,7 +8,6 @@ namespace Lox {
 
 Maybe<Expr> BinaryParseRule::parse(Parser* parser, ExprPtr& lhs,
                                    Token token) const {
-  INFO("binary parse: {}", token.toString());
   auto rhs = JUST(parser->parsePrecedence(token.precedence));
   ExprPtr ret = std::make_shared<Binary>(lhs, token, rhs);
   return ret;
@@ -16,11 +15,7 @@ Maybe<Expr> BinaryParseRule::parse(Parser* parser, ExprPtr& lhs,
 
 Maybe<Expr> SubScriptParseRule::parse(Parser* parser, ExprPtr& lhs,
                                       Token token) const {
-  INFO("-----------------------------------------");
-  INFO("subscript parse: {}", token.toString());
-
   auto rhs = JUST(parser->parsePrecedence(Precedence::None));
-  INFO("subscrit rhs: {}", rhs->to_string());
   JUST(
       parser->consume(TokenType::RIGHT_BRACKET, "Expect ']' after expression"));
   ExprPtr ret = std::make_shared<Binary>(lhs, token, rhs);

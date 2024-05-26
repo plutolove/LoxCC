@@ -14,7 +14,8 @@ int main(int argc, char** argv) {
   Lox::Parser parser(*tokens.Data());
   auto expr = parser.parse();
   if (expr.isOk()) {
-    INFO("expr str: {}", expr.Data()->to_string());
+    INFO("src: {}, prefix expr: {}", scan.getSource(),
+         expr.Data()->to_string());
   } else {
     ERROR("parse failed: {}", expr.ErrMsg());
   }

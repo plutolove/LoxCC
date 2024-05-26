@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -13,6 +14,7 @@ class Scanner {
   Scanner(const std::string& src);
 
   Maybe<std::vector<Token>> scanTokens();
+  std::string_view getSource() const { return source; }
 
  private:
   void scanToken();

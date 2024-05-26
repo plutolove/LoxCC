@@ -12,13 +12,20 @@ class ErrorProto {
   ErrorProto() {}
 
   template <typename... Args>
-  ErrorProto(fmt::format_string<Args...> format, Args&&... args)
-      : error_message(fmt::format(format, std::forward<Args>(args)...)) {}
+  ErrorProto(const std::string& file, int64_t line, const std::string& func,
+             fmt::format_string<Args...> format, Args&&... args)
+      : error_message(
+            fmt::format("{} : {}", fmt::format("{}:{}:{}", file, line, func),
+                        fmt::format(format, std::forward<Args>(args)...))) {}
 
   template <typename... Args>
-  void append(fmt::format_string<Args...> format, Args&&... args) {
+  void append(const std::string& file, int64_t line, const std::string& func,
+              fmt::format_string<Args...> format, Args&&... args) {
     error_message.append("\n");
-    error_message.append(fmt::format(format, std::forward<Args>(args)...));
+
+    error_message.append(
+        fmt::format("{} : {}", fmt::format("{}:{}:{}", file, line, func),
+                    fmt::format(format, std::forward<Args>(args)...)));
   }
 
   void addStackFrame(const std::string& file, int64_t line,
@@ -42,9 +49,13 @@ class ErrorProto {
   std::list<std::string> stack_frame;
 };
 
-#define NewErr(...) std::make_shared<ErrorProto>(__VA_ARGS__);
+#define NewErrImpl(file, line, func, ...) \
+  std::make_shared<ErrorProto>(file, line, func, ##__VA_ARGS__)
 
-#define AppendErr(err, ...) err->append(__VA_ARGS__);
+#define NewErr(...) NewErrImpl(__FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
+
+#define AppendErr(err, ...) \
+  err->append(__FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
 
 template <typename T>
 class Maybe {

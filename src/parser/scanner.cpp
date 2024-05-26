@@ -5,7 +5,8 @@
 
 namespace Lox {
 
-Scanner::Scanner(const std::string& src) : source(src) {}
+Scanner::Scanner(const std::string& src)
+    : source(src), err(std::make_shared<ErrorProto>()) {}
 
 Maybe<std::vector<Token>> Scanner::scanTokens() {
   while (!isAtEnd()) {

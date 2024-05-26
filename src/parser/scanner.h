@@ -75,7 +75,7 @@ class Scanner {
   int start{0};
   int current{0};
   int line{1};
-  std::shared_ptr<ErrorProto> err = NewErr();
+  std::shared_ptr<ErrorProto> err;
 
   static inline std::unordered_map<TokenType, Precedence> type2prece{
       {TokenType::LEFT_PAREN, Precedence::CALL},

@@ -19,6 +19,7 @@ class Scanner {
   void identifier();
   void peekString();
   void number();
+  void arrow();
 
   bool isAtEnd() { return current >= source.size(); }
   bool isDigit(char c) { return c >= '0' && c <= '9'; }
@@ -28,13 +29,23 @@ class Scanner {
 
   bool isAlphaNumeric(char ch) { return isAlpha(ch) or isDigit(ch); }
 
+  Precedence getPrece(TokenType type) {
+    auto iter = type2prece.find(type);
+    if (iter != type2prece.end()) return iter->second;
+    return Precedence::None;
+  }
+
   void addToken(TokenType type, const std::string& val) {
-    tokens.push_back(Token{.type = type, .lexeme = val, .line = line});
+    tokens.push_back(Token{.type = type,
+                           .lexeme = val,
+                           .precedence = getPrece(type),
+                           .line = line});
   }
 
   void addToken(TokenType type) {
     tokens.push_back(Token{.type = type,
                            .lexeme = source.substr(start, current - start),
+                           .precedence = getPrece(type),
                            .line = line});
   }
 
@@ -64,10 +75,28 @@ class Scanner {
   int line{1};
   std::shared_ptr<ErrorProto> err = NewErr();
 
+  static inline std::unordered_map<TokenType, Precedence> type2prece{
+      {TokenType::LEFT_PAREN, Precedence::CALL},
+      {TokenType::DOT, Precedence::CALL},
+      {TokenType::MINUS, Precedence::TERM},
+      {TokenType::PLUS, Precedence::TERM},
+      {TokenType::STAR, Precedence::FACTOR},
+      {TokenType::SLASH, Precedence::FACTOR},
+      {TokenType::BANG_EQUAL, Precedence::EQUALITY},
+      {TokenType::EQUAL_EQUAL, Precedence::EQUALITY},
+      {TokenType::GREATER, Precedence::COMPARISON},
+      {TokenType::GREATER_EQUAL, Precedence::COMPARISON},
+      {TokenType::LESS, Precedence::COMPARISON},
+      {TokenType::LESS_EQUAL, Precedence::COMPARISON},
+      {TokenType::AND, Precedence::And},
+      {TokenType::OR, Precedence::Or},
+      {TokenType::LEFT_BRACKET, Precedence::PRIMARY},
+  };
+
   inline const static std::unordered_map<std::string, TokenType> key_words{
       {"and", TokenType::AND},       {"class", TokenType::CLASS},
       {"else", TokenType::ELSE},     {"false", TokenType::FALSE},
-      {"for", TokenType::FOR},       {"fun", TokenType::FUN},
+      {"for", TokenType::FOR},       {"fn", TokenType::FUN},
       {"if", TokenType::IF},         {"nil", TokenType::NIL},
       {"or", TokenType::OR},         {"print", TokenType::PRINT},
       {"return", TokenType::RETURN}, {"super", TokenType::SUPER},

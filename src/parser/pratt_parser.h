@@ -7,27 +7,32 @@
 
 namespace Lox {
 
+class GroupParseRule;
+class UnaryParseRule;
+class LiteralParseRule;
+class BinaryParseRule;
+class SubScriptParseRule;
+
 class Parser {
  public:
   Parser(const std::vector<Token>& tokens) : tokens(tokens) {}
+
+  Maybe<Expr> parsePrecedence(Precedence prece);
+
   Maybe<Expr> parse() { return expression(); }
 
+  // friend class
+  friend class GroupParseRule;
+  friend class UnaryParseRule;
+  friend class LiteralParseRule;
+  friend class BinaryParseRule;
+  friend class SubScriptParseRule;
+
  private:
+  Maybe<Expr> expression();
+
   Token previous() { return tokens[current - 1]; }
   Token peek() { return tokens[current]; }
-
-  Maybe<Expr> expression();
-  Maybe<Expr> assignment();
-  Maybe<Expr> primary();
-  Maybe<Expr> or_expr();
-  Maybe<Expr> and_expr();
-  Maybe<Expr> call();
-  Maybe<Expr> finishCall(ExprPtr callee);
-  Maybe<Expr> unary();
-  Maybe<Expr> factor();
-  Maybe<Expr> term();
-  Maybe<Expr> comparison();
-  Maybe<Expr> equality();
 
   bool isAtEnd() { return peek().type == TokenType::END; }
 

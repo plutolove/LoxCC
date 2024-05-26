@@ -1,4 +1,8 @@
 #include "parser/scanner.h"
+
+#include "common/log.h"
+#include "common/maybe.h"
+
 namespace Lox {
 
 Scanner::Scanner(const std::string& src) : source(src) {}
@@ -23,6 +27,12 @@ void Scanner::scanToken() {
     case ')':
       addToken(TokenType::RIGHT_PAREN);
       break;
+    case '[':
+      addToken(TokenType::LEFT_BRACKET);
+      break;
+    case ']':
+      addToken(TokenType::RIGHT_BRACKET);
+      break;
     case '{':
       addToken(TokenType::LEFT_BRACE);
       break;
@@ -36,10 +46,13 @@ void Scanner::scanToken() {
       addToken(TokenType::DOT);
       break;
     case '-':
-      addToken(TokenType::MINUS);
+      addToken(match('>') ? TokenType::ARROW : TokenType::MINUS);
       break;
     case '+':
       addToken(TokenType::PLUS);
+      break;
+    case ':':
+      addToken(TokenType::COLON);
       break;
     case ';':
       addToken(TokenType::SEMICOLON);
@@ -98,6 +111,9 @@ void Scanner::scanToken() {
         //< identifier-start
       } else {
         AppendErr(err, "Unexpected charactoer in line: {}", line);
+        for (auto&& token : tokens) {
+          INFO("token: {}", token.toString());
+        }
         // Lox.error(line, "Unexpected character.");
       }
       //< digit-start
@@ -139,6 +155,8 @@ void Scanner::peekString() {
   auto value = source.substr(start + 1, current - 2 - start);
   addToken(TokenType::STRING, value);
 }
+
+void Scanner::arrow() { addToken(TokenType::ARROW); }
 
 void Scanner::number() {
   while (isDigit(peek())) advance();

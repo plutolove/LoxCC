@@ -57,6 +57,7 @@ class Maybe {
   Maybe(ValueType&& ptr) : data_(std::move(ptr)) {}
   Maybe(const ErrorType& err) : data_(err) {}
   Maybe(const ErrorProto& err) : data_(std::make_shared<ErrorProto>(err)) {}
+
   Maybe(ErrorProto&& err)
       : data_(std::make_shared<ErrorProto>(std::move(err))) {}
 

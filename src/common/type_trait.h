@@ -67,7 +67,7 @@ bool InstanceOf(const F* ptr) {
 
 template <typename T, typename F>
 bool InstanceOf(const std::shared_ptr<F>& ptr) {
-  auto ret = typeid_cast<std::shared_ptr<T>>(ptr);
+  auto ret = typeid_cast<const T*>(ptr.get());
   if (ret) return true;
   return false;
 }

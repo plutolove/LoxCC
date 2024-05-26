@@ -19,6 +19,7 @@ target("Lox")
     set_strip("all")
     add_includedirs("./src")
     add_files("src/*/*.cpp")
+    add_files("src/*/*/*.cpp")
     add_files("src/*.cpp")
     add_packages("fmt", "abseil", "spdlog", "boost", "magic_enum")
 

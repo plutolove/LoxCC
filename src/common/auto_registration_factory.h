@@ -2,7 +2,7 @@
 #include <memory>
 #include <unordered_map>
 
-#include "boost/preprocessor.hpp"
+#include "boost/preprocessor/cat.hpp"
 
 namespace Lox {
 
@@ -50,7 +50,7 @@ class AutoRegistrationFactory {
   }
 };
 
-#define REGISTER_VAR_NAME BOOST_PP_CAT(auto_reg_var_, __COUNTER__)
+#define REGISTER_VAR_NAME BOOST_PP_CAT(__auto_reg_var_name_, __COUNTER__)
 
 #define REGISTER_CLASS(Key, key, Base, Derived)                    \
   static AutoRegistrationFactory<Base, Key>::RegisterType<Derived> \

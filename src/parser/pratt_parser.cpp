@@ -8,7 +8,13 @@
 
 namespace Lox {
 
-Maybe<Expr> Parser::expression() { return parsePrecedence(Precedence::Assig); }
+Maybe<Expr> Parser::expression() {
+  auto expr = parsePrecedence(Precedence::Assig);
+  if (not isAtEnd()) {
+    return NewErr("Expected EOF token, get: {}", peek().toString());
+  }
+  return expr;
+}
 
 Maybe<Expr> Parser::parsePrecedence(Precedence prece) {
   auto token = advance();
@@ -31,7 +37,6 @@ Maybe<Expr> Parser::parsePrecedence(Precedence prece) {
     right_prece = peek().precedence;
     // INFO("before: {}, after: {}", token.toString(), peek().toString());
   }
-
   return lhs;
 }
 

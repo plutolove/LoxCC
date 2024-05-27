@@ -35,7 +35,7 @@ Maybe<Expr> LiteralParseRule::parse(Parser* parser, Token token) const {
     ret = std::make_shared<Literal>(
         (TokenType::TRUE == token.type ? true : false), token);
   } else {
-    return NewErr("unknow token: {}", token.toString());
+    return NewErr("Expected a Literal, got a different: {}", token.toString());
   }
   return ret;
 }

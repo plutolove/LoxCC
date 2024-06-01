@@ -14,7 +14,7 @@ class Visitor : VisitorBase<R> {
   virtual R visit(Derived* ptr) = 0;
 };
 
-template <typename R, typename... Args>
+template <typename R = void, typename... Args>
 class VisitorHelper : public Visitor<R, Args>... {};
 
 }  // namespace Lox

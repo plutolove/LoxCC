@@ -55,20 +55,22 @@ class Binary : public ExprVisitorHelper<Binary> {
 
 class Assign : public ExprVisitorHelper<Assign> {
  public:
-  Assign(Token name, const ExprPtr& value) : name(name), value(value) {}
+  Assign(const ExprPtr& lhs, Token token, const ExprPtr& value)
+      : name(lhs), token(token), value(value) {}
 
   virtual std::string to_string() const override {
-    return fmt::format("({} {})", name.lexeme, value->to_string());
+    return fmt::format("({} := {})", name->to_string(), value->to_string());
   }
 
-  Token name;
+  ExprPtr name;
+  Token token;
   ExprPtr value;
 };
 
-class Call : public ExprVisitorHelper<Call> {
+class FunctionCall : public ExprVisitorHelper<FunctionCall> {
  public:
-  Call(const ExprPtr& callee, Token paren,
-       const std::vector<ExprPtr>& arguments)
+  FunctionCall(const ExprPtr& callee, Token paren,
+               const std::vector<ExprPtr>& arguments)
       : callee(callee), paren(paren), arguments(arguments) {}
 
   virtual std::string to_string() const override {
@@ -165,15 +167,91 @@ class Unary : public ExprVisitorHelper<Unary> {
   ExprPtr right;
 };
 
+class Identifier : public ExprVisitorHelper<Identifier> {
+ public:
+  Identifier(Token token, const std::string& name);
+  virtual std::string to_string() const override;
+
+  Token token;
+  std::string name;
+};
+
 class Variable : public ExprVisitorHelper<Variable> {
  public:
-  Variable(Token name) : name(name) {}
+  Variable(const std::string& name, const std::string& type)
+      : name(name), type(type) {}
 
   virtual std::string to_string() const override {
-    return fmt::format("{}", name.lexeme);
+    return fmt::format("var {}:{}", name, type);
   }
 
-  Token name;
+  std::string name;
+  std::string type;
+};
+
+// 保存整个编译文件
+class Module : public ExprVisitorHelper<Module> {
+ public:
+  Module(const std::vector<ExprPtr>& stmts);
+  Module() {}
+  void add(const ExprPtr& stmt) { stmts.push_back(stmt); }
+
+  virtual std::string to_string() const override;
+
+  std::vector<ExprPtr> stmts;
+};
+
+class FunctionDef : public ExprVisitorHelper<FunctionDef> {
+ public:
+  FunctionDef(const std::string& name, const std::vector<ExprPtr>& params,
+              const std::string& return_type, const ExprPtr& body)
+      : function_name(name),
+        params(params),
+        return_type(return_type),
+        body(body) {}
+
+  virtual std::string to_string() const override {
+    std::vector<std::string> arg;
+
+    std::transform(params.begin(), params.end(), std::back_inserter(arg),
+                   [](auto&& expr) { return expr->to_string(); });
+
+    return fmt::format("fn {}({}) -> {} {{ \n{}\n }}", function_name,
+                       fmt::join(arg, ", "), return_type, body->to_string());
+  }
+
+  std::string function_name;
+  std::vector<ExprPtr> params;
+  std::string return_type;
+  ExprPtr body;
+};
+
+class BlockStmt : public ExprVisitorHelper<BlockStmt> {
+ public:
+  BlockStmt(const std::vector<ExprPtr>& stmts);
+  virtual std::string to_string() const override;
+
+  std::vector<ExprPtr> stmts;
+};
+
+class ExpressionStmt : public ExprVisitorHelper<ExpressionStmt> {
+ public:
+  ExpressionStmt(Token token, const ExprPtr& stmt);
+  virtual std::string to_string() const override;
+
+  Token token;
+  ExprPtr expr;
+};
+
+class VarExpressionStmt : public ExprVisitorHelper<ExpressionStmt> {
+ public:
+  VarExpressionStmt(const ExprPtr& var, const ExprPtr& stmt);
+  VarExpressionStmt(const ExprPtr& var);
+
+  virtual std::string to_string() const override;
+
+  ExprPtr var;
+  ExprPtr expr;
 };
 
 }  // namespace Lox

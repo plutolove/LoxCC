@@ -12,6 +12,7 @@ class UnaryParseRule;
 class LiteralParseRule;
 class BinaryParseRule;
 class SubScriptParseRule;
+class FunctionCallParseRule;
 
 class Parser {
  public:
@@ -19,22 +20,33 @@ class Parser {
 
   Maybe<Expr> parsePrecedence(Precedence prece);
 
-  Maybe<Expr> parse() { return expression(); }
-
+  Maybe<Expr> parse();
   // friend class
   friend class GroupParseRule;
   friend class UnaryParseRule;
   friend class LiteralParseRule;
   friend class BinaryParseRule;
   friend class SubScriptParseRule;
+  friend class FunctionCallParseRule;
 
  private:
   Maybe<Expr> expression();
+  Maybe<Expr> parseFunction();
+  Maybe<Expr> parseBlocks();
+  Maybe<Expr> parseStmts();
+
+  Maybe<Expr> parseVarStmt();
+  Maybe<Expr> parseReturnStmt();
+  Maybe<Expr> parseExprStmt();
+
+  Maybe<std::vector<ExprPtr>> Arguments();
+  Maybe<std::vector<ExprPtr>> Params();
 
   Token previous() { return tokens[current - 1]; }
   Token peek() { return tokens[current]; }
 
   bool isAtEnd() { return peek().type == TokenType::END; }
+  bool isExprEnd() { return peek().type == TokenType::SEMICOLON; }
 
   Token advance() {
     if (!isAtEnd()) current++;

@@ -93,6 +93,7 @@ class Scanner {
       {TokenType::AND, Precedence::And},
       {TokenType::OR, Precedence::Or},
       {TokenType::LEFT_BRACKET, Precedence::PRIMARY},
+      {TokenType::EQUAL, Precedence::Assig},
   };
 
   inline const static std::unordered_map<std::string, TokenType> key_words{

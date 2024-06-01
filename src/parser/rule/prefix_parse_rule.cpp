@@ -40,8 +40,8 @@ Maybe<Expr> LiteralParseRule::parse(Parser* parser, Token token) const {
   return ret;
 }
 
-Maybe<Expr> VariableParseRule::parse(Parser* parser, Token token) const {
-  ExprPtr ret = std::make_shared<Variable>(token);
+Maybe<Expr> IdentifierParseRule::parse(Parser* parser, Token token) const {
+  ExprPtr ret = std::make_shared<Identifier>(token, token.lexeme);
   return ret;
 }
 
@@ -58,6 +58,6 @@ REGISTER_CLASS(TokenType, TokenType::STRING, PrefixRuleBase, LiteralParseRule);
 REGISTER_CLASS(TokenType, TokenType::TRUE, PrefixRuleBase, LiteralParseRule);
 REGISTER_CLASS(TokenType, TokenType::FALSE, PrefixRuleBase, LiteralParseRule);
 REGISTER_CLASS(TokenType, TokenType::IDENTIFIER, PrefixRuleBase,
-               VariableParseRule);
+               IdentifierParseRule);
 
 }  // namespace Lox

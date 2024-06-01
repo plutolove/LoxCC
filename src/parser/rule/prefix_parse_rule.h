@@ -25,7 +25,7 @@ class LiteralParseRule : public PrefixRuleBase {
   virtual Maybe<Expr> parse(Parser* parser, Token token) const override;
 };
 
-class VariableParseRule : public PrefixRuleBase {
+class IdentifierParseRule : public PrefixRuleBase {
  public:
   virtual Maybe<Expr> parse(Parser* parser, Token token) const override;
 };

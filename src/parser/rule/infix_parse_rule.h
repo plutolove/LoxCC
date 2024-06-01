@@ -22,4 +22,16 @@ class SubScriptParseRule : public InfixRuleBase {
                             Token token) const override;
 };
 
+class AssignParseRule : public InfixRuleBase {
+ public:
+  virtual Maybe<Expr> parse(Parser* parser, ExprPtr& lhs,
+                            Token token) const override;
+};
+
+class FunctionCallParseRule : public InfixRuleBase {
+ public:
+  virtual Maybe<Expr> parse(Parser* parser, ExprPtr& lhs,
+                            Token token) const override;
+};
+
 }  // namespace Lox

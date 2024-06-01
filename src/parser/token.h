@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <string>
 
 #include "fmt/format.h"
@@ -61,7 +62,7 @@ enum class TokenType {
   END,
 };
 
-enum class Precedence {
+enum class Precedence : int8_t {
   None = 0,
   Assig,
   Or,

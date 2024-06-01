@@ -32,12 +32,13 @@ class Parser {
  private:
   Maybe<Expr> expression();
   Maybe<Expr> parseFunction();
-  Maybe<Expr> parseBlocks();
+  Maybe<Expr> parseBlock();
   Maybe<Expr> parseStmts();
 
   Maybe<Expr> parseVarStmt();
   Maybe<Expr> parseReturnStmt();
   Maybe<Expr> parseExprStmt();
+  Maybe<Expr> parseIfStmt();
 
   Maybe<std::vector<ExprPtr>> Arguments();
   Maybe<std::vector<ExprPtr>> Params();

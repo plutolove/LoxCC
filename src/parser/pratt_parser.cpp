@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "common/auto_registration_factory.h"
+#include "common/log.h"
 #include "common/maybe.h"
 #include "parser/expr.h"
 #include "parser/rule/infix_parse_rule.h"
@@ -63,7 +64,6 @@ Maybe<Expr> Parser::parseReturnStmt() {
     ExprPtr ret = std::make_shared<ReturnStmt>();
     return ret;
   }
-  INFO("msq debug: {}", peek().toString());
   auto expr = JUST(expression());
   ExprPtr ret = std::make_shared<ReturnStmt>(expr);
   JUST(consume(TokenType::SEMICOLON, "Expect ';' after expression"));
@@ -73,6 +73,19 @@ Maybe<Expr> Parser::parseReturnStmt() {
 Maybe<Expr> Parser::parseExprStmt() {
   ExprPtr ret = JUST(expression());
   JUST(consume(TokenType::SEMICOLON, "Expect ';' after expression"));
+  return ret;
+}
+
+Maybe<Expr> Parser::parseIfStmt() {
+  JUST(consume(TokenType::LEFT_PAREN, "Expect '(' after 'if'"));
+  auto cond = JUST(expression());
+  JUST(consume(TokenType::RIGHT_PAREN, "Expect ')' after if condition"));
+  auto if_block = JUST(parseStmts());
+  ExprPtr else_block;
+  if (match(TokenType::ELSE)) {
+    else_block = JUST(parseStmts());
+  }
+  ExprPtr ret = std::make_shared<IfStmt>(cond, if_block, else_block);
   return ret;
 }
 
@@ -92,21 +105,25 @@ Maybe<Expr> Parser::parseStmts() {
   //  } else {
   //    expressionStatement();
   //  }
-  if (match(TokenType::FOR)) {
-  } else if (match(TokenType::IF)) {
+
+  // if (match(TokenType::FOR)) {
+  // } else
+  if (match(TokenType::IF)) {
+    return JUST(parseIfStmt());
   } else if (match(TokenType::VAR)) {
     return JUST(parseVarStmt());
   } else if (match(TokenType::RETURN)) {
     return JUST(parseReturnStmt());
+  } else if (match(TokenType::LEFT_BRACE)) {
+    return parseBlock();
   } else {
     return JUST(parseExprStmt());
   }
 }
 
-Maybe<Expr> Parser::parseBlocks() {
+Maybe<Expr> Parser::parseBlock() {
   ExprPtr ret;
   std::vector<ExprPtr> blocks;
-  JUST(consume(TokenType::LEFT_BRACE, "Expect '{' in function body"));
   while (not check(TokenType::RIGHT_BRACE) and not isAtEnd()) {
     auto block = JUST(parseStmts());
     blocks.push_back(block);
@@ -125,7 +142,7 @@ Maybe<Expr> Parser::parseFunction() {
   JUST(consume(TokenType::ARROW, "Expect -> after function params"));
   auto ret_type = JUST(
       consume(TokenType::IDENTIFIER, "Expect identifier function return type"));
-  auto body = JUST(parseBlocks());
+  auto body = JUST(parseStmts());
   ret = std::make_shared<FunctionDef>(function_name->lexeme, *params,
                                       ret_type->lexeme, body);
   return ret;

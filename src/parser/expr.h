@@ -254,4 +254,18 @@ class VarExpressionStmt : public ExprVisitorHelper<ExpressionStmt> {
   ExprPtr expr;
 };
 
+class ReturnStmt : public ExprVisitorHelper<ReturnStmt> {
+ public:
+  ReturnStmt() {}
+  ReturnStmt(const ExprPtr& expr) : expr(expr) {}
+  virtual std::string to_string() const override {
+    if (expr) {
+      return fmt::format("return {}", expr->to_string());
+    } else {
+      return "return";
+    }
+  }
+  ExprPtr expr;
+};
+
 }  // namespace Lox

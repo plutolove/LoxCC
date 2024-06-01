@@ -59,7 +59,15 @@ Maybe<Expr> Parser::parseVarStmt() {
 }
 
 Maybe<Expr> Parser::parseReturnStmt() {
-  return NewErr("not implement parseReturnStmt");
+  if (check(TokenType::SEMICOLON)) {
+    ExprPtr ret = std::make_shared<ReturnStmt>();
+    return ret;
+  }
+  INFO("msq debug: {}", peek().toString());
+  auto expr = JUST(expression());
+  ExprPtr ret = std::make_shared<ReturnStmt>(expr);
+  JUST(consume(TokenType::SEMICOLON, "Expect ';' after expression"));
+  return ret;
 }
 
 Maybe<Expr> Parser::parseExprStmt() {

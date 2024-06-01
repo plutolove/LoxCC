@@ -88,28 +88,6 @@ class FunctionCall : public ExprVisitorHelper<FunctionCall> {
   std::vector<ExprPtr> arguments;
 };
 
-class Get : public ExprVisitorHelper<Get> {
- public:
-  Get(const ExprPtr& object, Token name) : object(object), name(name) {}
-
-  virtual std::string to_string() const override { return "get"; }
-
-  ExprPtr object;
-  Token name;
-};
-
-class Set : public ExprVisitorHelper<Set> {
- public:
-  Set(const ExprPtr& object, Token name, const ExprPtr& value)
-      : object(object), name(name), value(value) {}
-
-  virtual std::string to_string() const override { return "set"; }
-
-  ExprPtr object;
-  Token name;
-  ExprPtr value;
-};
-
 class Grouping : public ExprVisitorHelper<Grouping> {
  public:
   Grouping(const ExprPtr& expression) : expression(expression) {}
@@ -232,6 +210,43 @@ class BlockStmt : public ExprVisitorHelper<BlockStmt> {
   virtual std::string to_string() const override;
 
   std::vector<ExprPtr> stmts;
+};
+
+class ForStmt : public ExprVisitorHelper<ForStmt> {
+ public:
+  ForStmt(const ExprPtr& init, const ExprPtr& cond, const ExprPtr& update,
+          const ExprPtr& body)
+      : init(init), cond(cond), update(update), body(body) {}
+  virtual std::string to_string() const override {
+    return fmt::format("for ({}; {}; {}) {{\n{}\n}}", init->to_string(),
+                       cond->to_string(), update->to_string(),
+                       body->to_string());
+  }
+  ExprPtr init;
+  ExprPtr cond;
+  ExprPtr update;
+  ExprPtr body;
+};
+
+class IfStmt : public ExprVisitorHelper<IfStmt> {
+ public:
+  IfStmt(const ExprPtr& cond, const ExprPtr& if_block,
+         const ExprPtr& else_block)
+      : cond(cond), if_block(if_block), else_block(else_block) {}
+
+  virtual std::string to_string() const override {
+    if (else_block) {
+      return fmt::format("if ({}) {{ \n{}\n }} else {{\n{}\n}}",
+                         cond->to_string(), if_block->to_string(),
+                         else_block->to_string());
+    } else {
+      return fmt::format("if ({}) {{ \n{}\n }}", cond->to_string(),
+                         if_block->to_string());
+    }
+  }
+  ExprPtr cond;
+  ExprPtr if_block;
+  ExprPtr else_block;
 };
 
 class ExpressionStmt : public ExprVisitorHelper<ExpressionStmt> {

@@ -92,7 +92,9 @@ Maybe<Expr> Parser::parseStmts() {
   //  } else {
   //    expressionStatement();
   //  }
-  if (match(TokenType::VAR)) {
+  if (match(TokenType::FOR)) {
+  } else if (match(TokenType::IF)) {
+  } else if (match(TokenType::VAR)) {
     return JUST(parseVarStmt());
   } else if (match(TokenType::RETURN)) {
     return JUST(parseReturnStmt());

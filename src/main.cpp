@@ -2,14 +2,18 @@
 
 #include "common/log.h"
 #include "common/maybe.h"
+#include "gflags/gflags.h"
 #include "parser/pratt_parser.h"
 #include "parser/scanner.h"
 
 using namespace Lox;
 
+DEFINE_string(path, "", "");
+
 int main(int argc, char** argv) {
-  std::ifstream file(
-      "/home/meng/workspace/LoxCC/data/test.lox");  // 替换为实际文件路径
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
+
+  std::ifstream file(FLAGS_path);  // 替换为实际文件路径
 
   std::string content((std::istreambuf_iterator<char>(file)),
                       std::istreambuf_iterator<char>());

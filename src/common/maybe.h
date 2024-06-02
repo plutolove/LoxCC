@@ -1,8 +1,10 @@
 #pragma once
 #include <list>
 #include <string>
+#include <type_traits>
 #include <variant>
 
+#include "common/type_trait.h"
 #include "fmt/format.h"
 
 namespace Lox {
@@ -57,8 +59,12 @@ class ErrorProto {
 #define AppendErr(err, ...) \
   err->append(__FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
 
+template <typename T, typename = guard::Guard>
+class Maybe;
+
 template <typename T>
-class Maybe {
+class Maybe<
+    T, guard::TypeGuard<!std::is_same_v<T, void> && !std::is_arithmetic_v<T>>> {
  public:
   using ValueType = std::shared_ptr<T>;
   using ErrorType = std::shared_ptr<ErrorProto>;
@@ -66,6 +72,59 @@ class Maybe {
   Maybe(const T& val) : data_(std::make_shared<T>(val)) {}
   Maybe(const ValueType& ptr) : data_(ptr) {}
   Maybe(ValueType&& ptr) : data_(std::move(ptr)) {}
+  Maybe(const ErrorType& err) : data_(err) {}
+  Maybe(const ErrorProto& err) : data_(std::make_shared<ErrorProto>(err)) {}
+
+  Maybe(ErrorProto&& err)
+      : data_(std::make_shared<ErrorProto>(std::move(err))) {}
+
+  bool isOk() const { return std::holds_alternative<ValueType>(data_); }
+
+  ValueType Data() { return std::get<ValueType>(data_); }
+
+  std::string ErrMsg() { return std::get<ErrorType>(data_)->errorMsg(); }
+
+  ErrorType Error() { return std::get<ErrorType>(data_); }
+
+ private:
+  std::variant<ValueType, ErrorType> data_;
+};
+
+template <typename T>
+class Maybe<T, guard::TypeGuard<std::is_same_v<T, void>>> {
+ public:
+  using ValueType = bool;
+  using ErrorType = std::shared_ptr<ErrorProto>;
+
+  template <typename D>
+  Maybe(D&& d) : data_(true) {}
+
+  Maybe(const ErrorType& err) : data_(err) {}
+  Maybe(const ErrorProto& err) : data_(std::make_shared<ErrorProto>(err)) {}
+
+  Maybe(ErrorProto&& err)
+      : data_(std::make_shared<ErrorProto>(std::move(err))) {}
+
+  bool isOk() const { return std::holds_alternative<ValueType>(data_); }
+
+  ValueType Data() { return std::get<ValueType>(data_); }
+
+  std::string ErrMsg() { return std::get<ErrorType>(data_)->errorMsg(); }
+
+  ErrorType Error() { return std::get<ErrorType>(data_); }
+
+ private:
+  std::variant<bool, ErrorType> data_;
+};
+
+template <typename T>
+class Maybe<T, guard::TypeGuard<std::is_arithmetic_v<T>>> {
+ public:
+  using ValueType = T;
+  using ErrorType = std::shared_ptr<ErrorProto>;
+
+  Maybe(ValueType val) : data_(val) {}
+
   Maybe(const ErrorType& err) : data_(err) {}
   Maybe(const ErrorProto& err) : data_(std::make_shared<ErrorProto>(err)) {}
 

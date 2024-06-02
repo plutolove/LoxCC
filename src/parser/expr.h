@@ -13,7 +13,7 @@ namespace Lox {
 class Expr {
  public:
   virtual ~Expr() {}
-  virtual void accept(VisitorBase<void>& v) = 0;
+  virtual Maybe<void> accept(VisitorBase<void>& v) = 0;
   virtual std::string to_string() const = 0;
 
   DataTypePtr type;
@@ -26,9 +26,9 @@ class ExprVisitorHelper : public Expr {
  public:
   using Expr::Expr;
 
-  virtual void accept(VisitorBase<>& visitor) override {
+  virtual Maybe<void> accept(VisitorBase<>& visitor) override {
     if (auto visitor_ptr = dynamic_cast<Visitor<void, Derived>*>(&visitor)) {
-      visitor_ptr->visit(static_cast<Derived*>(this));
+      return JUST(visitor_ptr->visit(static_cast<Derived*>(this)));
     } else {
       FATAL("type cast failed: {} to {}", TypeName(Expr), TypeName(Derived));
       std::abort();

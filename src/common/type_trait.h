@@ -73,4 +73,13 @@ bool InstanceOf(const std::shared_ptr<F>& ptr) {
   return false;
 }
 
+namespace guard {
+
+using Guard = int;
+
+template <bool enable>
+using TypeGuard = std::enable_if_t<enable, Guard>;
+
+}  // namespace guard
+
 }  // namespace Lox

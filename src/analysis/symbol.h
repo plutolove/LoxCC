@@ -38,4 +38,6 @@ struct Symbol {
   std::vector<DataTypePtr> args_type;
 };
 
+using SymbolPtr = std::shared_ptr<Symbol>;
+
 }  // namespace Lox

@@ -1,6 +1,8 @@
 #include "analysis/data_type.h"
 
 #include "analysis/type_index.h"
+#include "boost/preprocessor/stringize.hpp"
+#include "common/auto_registration_factory.h"
 
 namespace Lox {
 

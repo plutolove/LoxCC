@@ -11,7 +11,7 @@ class AutoRegistrationFactory {
  public:
   template <typename Derived>
   struct RegisterType {
-    RegisterType(Key k, const Args&... args) {
+    RegisterType(const Key& k, const Args&... args) {
       AutoRegistrationFactory<Base, Key>::Get().mutable_objects()->emplace(
           k, std::make_shared<Derived>(args...));
     }
@@ -27,13 +27,32 @@ class AutoRegistrationFactory {
 
   static Base* getObj(const Key& key) { return Get().get_obj(key); }
 
+  static std::shared_ptr<Base> getSharedObj(const Key& key) {
+    return Get().get_shared_obj(key);
+  }
+
+  std::shared_ptr<Base> getShared(const Key& key) const {
+    return Get().get_shared_obj(key);
+  }
+
+  bool has_obj(const Key& key) const {
+    auto iter = objs_->find(key);
+    return iter != objs_->end();
+  }
+
  private:
   std::unique_ptr<std::unordered_map<Key, std::shared_ptr<Base>>> objs_;
 
-  Base* get_obj(const Key& key) {
+  Base* get_obj(const Key& key) const {
     auto iter = objs_->find(key);
     if (iter == objs_->end()) return nullptr;
     return iter->second.get();
+  }
+
+  std::shared_ptr<Base> get_shared_obj(const Key& key) const {
+    auto iter = objs_->find(key);
+    if (iter == objs_->end()) return nullptr;
+    return iter->second;
   }
 
   bool has_creators() const { return objs_.get() != nullptr; }

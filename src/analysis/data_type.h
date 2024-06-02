@@ -1,6 +1,10 @@
 #pragma once
 
+#include <future>
+
 #include "analysis/type_index.h"
+#include "common/auto_registration_factory.h"
+
 namespace Lox {
 
 class DataTypeBase {
@@ -17,6 +21,8 @@ class DataType : public DataTypeBase {
   virtual TypeIndex typeIndex() const override;
   virtual std::string_view typeName() const override;
 };
+
+using DataTypePtr = std::shared_ptr<DataTypeBase>;
 
 #define EXTERN_EXPAND_TYPE(type) extern template class DataType<type>;
 

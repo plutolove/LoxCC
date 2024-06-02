@@ -6,7 +6,6 @@ namespace Lox {
 template <typename R = void>
 class VisitorBase {
  public:
-  using ValueType = Maybe<R>;
   virtual ~VisitorBase() {}
 };
 

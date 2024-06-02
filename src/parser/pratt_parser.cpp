@@ -128,7 +128,7 @@ Maybe<Expr> Parser::parseBlock() {
     auto block = JUST(parseStmts());
     blocks.push_back(block);
   }
-  JUST(consume(TokenType::RIGHT_BRACE, "Expect '{' in function body"));
+  JUST(consume(TokenType::RIGHT_BRACE, "Expect '}' in function body"));
   ret = std::make_shared<BlockStmt>(blocks);
   return ret;
 }

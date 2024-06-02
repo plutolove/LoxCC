@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+#include "analysis/data_type.h"
 #include "common/log.h"
 #include "common/visitor.h"
 #include "parser/token.h"
@@ -14,6 +15,8 @@ class Expr {
   virtual ~Expr() {}
   virtual void accept(VisitorBase<void>& v) = 0;
   virtual std::string to_string() const = 0;
+
+  DataTypePtr type;
 };
 
 using ExprPtr = std::shared_ptr<Expr>;

@@ -24,7 +24,7 @@ constexpr std::string_view TypeName = "none";
 
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(EXPAND_TYPE_BOOST,
                               ((i32)(i64)(u32)(u64)(f32)(f64)))
+
 #undef EXPAND_TYPE
 #undef EXPAND_TYPE_BOOST
-
 }  // namespace Lox

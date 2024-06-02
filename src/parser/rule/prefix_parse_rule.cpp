@@ -28,9 +28,8 @@ Maybe<Expr> LiteralParseRule::parse(Parser* parser, Token token) const {
   } else if (TokenType::FLOAT == token.type) {
     ret = std::make_shared<Literal>(boost::lexical_cast<double>(token.lexeme),
                                     token);
-  } else if (TokenType::FLOAT == token.type) {
-    ret = std::make_shared<Literal>(boost::lexical_cast<double>(token.lexeme),
-                                    token);
+  } else if (TokenType::STRING == token.type) {
+    ret = std::make_shared<Literal>(token.lexeme, token);
   } else if (TokenType::FALSE == token.type or TokenType::TRUE == token.type) {
     ret = std::make_shared<Literal>(
         (TokenType::TRUE == token.type ? true : false), token);

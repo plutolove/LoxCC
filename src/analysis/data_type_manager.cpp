@@ -9,7 +9,7 @@ namespace Lox {
 #define REGISTER_TYPE_BOOST(r, seq) REGISTER_TYPE(BOOST_PP_SEQ_ELEM(0, seq))
 
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(REGISTER_TYPE_BOOST,
-                              ((i32)(i64)(u32)(u64)(f32)(f64)))
+                              ((i32)(i64)(u32)(u64)(f32)(f64)));
 
 Maybe<DataTypeBase> DataTypeManager::get(const std::string& name) const {
   auto obj = factory.getShared(name);

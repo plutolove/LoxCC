@@ -9,6 +9,8 @@ using DataTypeAutoRegistrationFactory =
 
 class DataTypeManager {
  public:
+  DataTypeManager() {}
+
   Maybe<DataTypeBase> get(const std::string& name) const;
   bool push(const std::string& name, const DataTypePtr& type);
 

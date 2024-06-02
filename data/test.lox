@@ -11,6 +11,9 @@ fn main(a: i32) -> i32 {
     x = 9*x;
   } else {
     x = 324;
+    {
+      y=2345;
+    }
   }
   return 0;
 }

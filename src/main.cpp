@@ -3,6 +3,9 @@
 #include "common/log.h"
 #include "common/maybe.h"
 #include "gflags/gflags.h"
+#include "llvm/ADT/ScopedHashTable.h"
+#include "llvm/ADT/StringRef.h"
+#include "llvm/Support/ErrorHandling.h"
 #include "parser/pratt_parser.h"
 #include "parser/scanner.h"
 
@@ -17,8 +20,6 @@ int main(int argc, char** argv) {
 
   std::string content((std::istreambuf_iterator<char>(file)),
                       std::istreambuf_iterator<char>());
-  INFO("content: {}", content);
-  //
   // Lox::Scanner scan_test("fn test(x : int) -> int");
   // Lox::Scanner scan("-1+2*3-4");(* (* (+ a b) c) (+ d e))
   // Lox::Scanner scan(
@@ -34,6 +35,23 @@ int main(int argc, char** argv) {
   } else {
     ERROR("parse failed: {}", expr.ErrMsg());
   }
+  std::string a{"a"};
+  llvm::ScopedHashTable<llvm::StringRef, int> hash_table{};
+  llvm::ScopedHashTableScope<llvm::StringRef, int> varScope(hash_table);
+  hash_table.insert(a, 2);
+
+  // hash_table.insert("b", 2);
+  // hash_table.insert("c", 2);
+  INFO("{}", hash_table.count("a"));
+  {
+    llvm::ScopedHashTableScope<llvm::StringRef, int> varScope1(hash_table);
+    auto cur_scope = hash_table.getCurScope();
+    INFO("{}", hash_table.count("a"));
+    auto x = hash_table.lookup("a");
+    // hash_table.insert(a, 2);
+    // INFO("{}", hash_table.count("a"));
+  }
+  INFO("{}", hash_table.count("a"));
   return 0;
 }
 

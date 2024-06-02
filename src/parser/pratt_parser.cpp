@@ -160,7 +160,7 @@ Maybe<Expr> Parser::parsePrecedence(Precedence prece) {
     return NewErr("Expect expression, get {}", token.toString());
   }
   auto lhs = JUST(rule->parse(this, token));
-  WARN("lhs str: {}", lhs->to_string());
+  // WARN("lhs str: {}", lhs->to_string());
   auto right_prece = peek().precedence;
 
   while (prece < right_prece and not isAtEnd()) {
@@ -170,7 +170,7 @@ Maybe<Expr> Parser::parsePrecedence(Precedence prece) {
       return NewErr("need binary operator: {}", token.toString());
     }
     lhs = JUST(rule->parse(this, lhs, token));
-    WARN("-lhs: {}", lhs->to_string());
+    // WARN("-lhs: {}", lhs->to_string());
     right_prece = peek().precedence;
     // INFO("before: {}, after: {}", token.toString(), peek().toString());
   }

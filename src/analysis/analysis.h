@@ -9,7 +9,7 @@ class Analysis : public AstVisitorHelper {
   Analysis() {}
 
  private:
-  DataTypeManager data_type_manager;
+  DataTypeManager data_type_manager{};
 };
 
 }  // namespace Lox

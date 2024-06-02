@@ -22,11 +22,14 @@ std::string Module::to_string() const {
 BlockStmt::BlockStmt(const std::vector<ExprPtr>& stmts) : stmts(stmts) {}
 
 std::string BlockStmt::to_string() const {
+  static std::atomic_uint64_t scope_id{0};
+  auto id = scope_id.fetch_add(1);
   std::vector<std::string> strs;
   std::for_each(stmts.begin(), stmts.end(), [&strs, this](auto&& val) {
     strs.push_back(val->to_string());
   });
-  return fmt::format("{}", fmt::join(strs, "\n"));
+  return fmt::format("scope {} start--->  \n{} \nscope {} end <---\n", id,
+                     fmt::join(strs, "\n"), id);
 }
 
 ExpressionStmt::ExpressionStmt(Token token, const ExprPtr& stmt)

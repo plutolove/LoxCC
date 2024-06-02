@@ -1,5 +1,9 @@
-fn main(a: int) -> int {
-  var x: int = (-1*3+4);
+fn test(a: i32) -> i32 {
+  return a*3+5;
+}
+
+fn main(a: i32) -> i32 {
+  var x: i32 = (-1*3+4);
   y = x+2 + abs(-1*abs(34));
   if (y > 34) {
     x = x+345;

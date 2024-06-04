@@ -33,9 +33,15 @@ class ScopeSymbolTable {
 
   Maybe<void> declar(const std::string& name, Symbol symbol);
 
+  Maybe<Symbol> getSymbol(const std::string& name) const;
+
  private:
-  bool hasDeclar(const std::string& name) {
+  bool hasDeclarCurrScope(const std::string& name) const {
     return curr_scope_symbols.count(name);
+  }
+
+  bool hasSymbol(const std::string& name) const {
+    return symbol_table.count(name);
   }
 
   std::unordered_set<std::string> curr_scope_symbols;

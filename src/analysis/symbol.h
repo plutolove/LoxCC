@@ -15,6 +15,7 @@ enum class SymbolType {
 };
 
 struct Symbol {
+  Symbol() {}
   Symbol(const std::string& name, const DataTypePtr& type)
       : symbol_type(SymbolType::Variable), name(name), type(type) {}
 

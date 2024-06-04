@@ -12,13 +12,18 @@ ScopePtr ScopeSymbolTable::newScope() {
 }
 
 Maybe<void> ScopeSymbolTable::declar(const std::string& name, Symbol symbol) {
-  if (hasDeclar(name)) {
+  if (hasDeclarCurrScope(name)) {
     return NewErr("Repeated definition of var: {}", name);
   }
 
   curr_scope_symbols.insert(name);
   symbol_table.insert(name, symbol);
   return true;
+}
+
+Maybe<Symbol> ScopeSymbolTable::getSymbol(const std::string& name) const {
+  if (hasSymbol(name)) symbol_table.lookup(name);
+  return NewErr("symbol not found: {}", name);
 }
 
 }  // namespace Lox

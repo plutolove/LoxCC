@@ -42,8 +42,7 @@ using DataTypePtr = std::shared_ptr<DataTypeBase>;
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(EXTERN_EXPAND_TYPE_BOOST,
                               ((i32)(i64)(u32)(u64)(f32)(f64)(bool)));
 
-static inline DataTypePtr CommonType(const DataTypePtr& lhs,
-                                     const DataTypePtr& rhs) {
+inline DataTypePtr commonType(const DataTypePtr& lhs, const DataTypePtr& rhs) {
   if (lhs->typeIndex() == lhs->typeIndex()) {
     return lhs;
   }

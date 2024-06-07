@@ -12,7 +12,7 @@ BOOST_PP_SEQ_FOR_EACH_PRODUCT(REGISTER_TYPE_BOOST,
                               ((i32)(i64)(u32)(u64)(f32)(f64)));
 
 Maybe<DataTypeBase> DataTypeManager::get(const std::string& name) const {
-  auto obj = factory.getShared(name);
+  auto obj = basic_type_.getShared(name);
   if (obj) {
     return obj;
   }
@@ -24,7 +24,7 @@ Maybe<DataTypeBase> DataTypeManager::get(const std::string& name) const {
 }
 
 bool DataTypeManager::push(const std::string& name, const DataTypePtr& type) {
-  if (factory.has_obj(name)) return false;
+  if (basic_type_.has_obj(name)) return false;
   if (hasType(name)) return false;
   data_.emplace(name, type);
   return true;

@@ -9,16 +9,16 @@ namespace Lox {
 enum class TypeIndex : int32_t { none = 0, i32, i64, u32, u64, f32, f64 };
 
 template <typename T>
-constexpr auto TypeId = TypeIndex::none;
+inline constexpr auto TypeId = TypeIndex::none;
 
 template <typename T>
-constexpr std::string_view TypeName = "none";
+inline constexpr std::string_view TypeName = "none";
 
-#define EXPAND_TYPE(type)                        \
-  template <>                                    \
-  constexpr auto TypeId<type> = TypeIndex::type; \
-  template <>                                    \
-  constexpr std::string_view TypeName<type> = BOOST_PP_STRINGIZE(type);
+#define EXPAND_TYPE(type)                               \
+  template <>                                           \
+  inline constexpr auto TypeId<type> = TypeIndex::type; \
+  template <>                                           \
+  inline constexpr std::string_view TypeName<type> = BOOST_PP_STRINGIZE(type);
 
 #define EXPAND_TYPE_BOOST(r, seq) EXPAND_TYPE(BOOST_PP_SEQ_ELEM(0, seq))
 

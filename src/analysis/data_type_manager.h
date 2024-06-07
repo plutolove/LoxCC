@@ -23,7 +23,8 @@ class DataTypeManager {
   }
 
   std::unordered_map<std::string, DataTypePtr> data_;
-  DataTypeAutoRegistrationFactory& factory{
+
+  DataTypeAutoRegistrationFactory& basic_type_{
       DataTypeAutoRegistrationFactory::Get()};
 };
 

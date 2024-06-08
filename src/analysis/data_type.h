@@ -1,9 +1,8 @@
 #pragma once
 
-#include <future>
+#include <memory>
 
 #include "analysis/type_index.h"
-#include "common/auto_registration_factory.h"
 
 namespace Lox {
 
@@ -46,11 +45,18 @@ inline DataTypePtr commonType(const DataTypePtr& lhs, const DataTypePtr& rhs) {
   if (lhs->typeIndex() == lhs->typeIndex()) {
     return lhs;
   }
+
   if (lhs->getSize() != rhs->getSize()) {
     return lhs->getSize() > rhs->getSize() ? lhs : rhs;
   }
+
   if (lhs->isSigned()) return rhs;
   return lhs;
+}
+
+// TODO: implement check is same type
+inline bool isSameType(const DataTypePtr& lhs, const DataTypePtr& rhs) {
+  return true;
 }
 
 }  // namespace Lox

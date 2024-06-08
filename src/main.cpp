@@ -1,5 +1,6 @@
 #include <fstream>
 
+#include "analysis/analysis.h"
 #include "common/log.h"
 #include "common/maybe.h"
 #include "gflags/gflags.h"
@@ -30,28 +31,33 @@ int main(int argc, char** argv) {
   Lox::Parser parser(*tokens.Data());
   auto expr = parser.parse();
   if (expr.isOk()) {
-    INFO("src: {}", scan.getSource());
-    INFO("{}", expr.Data()->to_string());
+    // INFO("src: {}", scan.getSource());
+    // INFO("{}", expr.Data()->to_string());
   } else {
     ERROR("parse failed: {}", expr.ErrMsg());
   }
-  std::string a{"a"};
-  llvm::ScopedHashTable<llvm::StringRef, int> hash_table{};
-  llvm::ScopedHashTableScope<llvm::StringRef, int> varScope(hash_table);
-  hash_table.insert(a, 2);
-
-  // hash_table.insert("b", 2);
-  // hash_table.insert("c", 2);
-  INFO("{}", hash_table.count("a"));
-  {
-    llvm::ScopedHashTableScope<llvm::StringRef, int> varScope1(hash_table);
-    auto cur_scope = hash_table.getCurScope();
-    INFO("{}", hash_table.count("a"));
-    auto x = hash_table.lookup("a");
-    // hash_table.insert(a, 2);
-    // INFO("{}", hash_table.count("a"));
+  Lox::Analysis analysis;
+  auto result = analysis.analysis(expr.Data());
+  if (not result.isOk()) {
+    ERROR("analysis failed: {}", result.ErrMsg());
   }
-  INFO("{}", hash_table.count("a"));
+  // std::string a{"a"};
+  // llvm::ScopedHashTable<llvm::StringRef, int> hash_table{};
+  // llvm::ScopedHashTableScope<llvm::StringRef, int> varScope(hash_table);
+  // hash_table.insert(a, 2);
+
+  // // hash_table.insert("b", 2);
+  // // hash_table.insert("c", 2);
+  // INFO("{}", hash_table.count("a"));
+  // {
+  //   llvm::ScopedHashTableScope<llvm::StringRef, int> varScope1(hash_table);
+  //   auto cur_scope = hash_table.getCurScope();
+  //   INFO("{}", hash_table.count("a"));
+  //   auto x = hash_table.lookup("a");
+  //   // hash_table.insert(a, 2);
+  //   // INFO("{}", hash_table.count("a"));
+  // }
+  // INFO("{}", hash_table.count("a"));
   return 0;
 }
 

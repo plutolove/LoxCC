@@ -33,6 +33,24 @@ struct Symbol {
         type(type),
         args_type(args_type) {}
 
+  bool isFunction() const { return SymbolType::Function == symbol_type; }
+  bool isVariable() const { return SymbolType::Variable == symbol_type; }
+
+  std::string to_string() const {
+    if (isFunction()) {
+      std::vector<std::string> args_str;
+      std::for_each(args_type.begin(), args_type.end(),
+                    [&args_str](auto&& arg) {
+                      args_str.push_back(std::string(arg->typeName()));
+                    });
+
+      return fmt::format("{}({}) -> {}", name, fmt::join(args_str, ", "),
+                         type->typeName());
+    } else {
+      return fmt::format("var {}:{}", name, type->typeName());
+    }
+  }
+
   SymbolType symbol_type;
   std::string name;
   DataTypePtr type;

@@ -1,10 +1,13 @@
 #include "analysis/data_type_manager.h"
 
+#include "analysis/data_type.h"
+#include "boost/config/helper_macros.hpp"
+
 namespace Lox {
 
-#define REGISTER_TYPE(type)                                  \
-  static DataTypeAutoRegistrationFactory::RegisterType<type> \
-      REGISTER_VAR_NAME(type);
+#define REGISTER_TYPE(type)                                            \
+  static DataTypeAutoRegistrationFactory::RegisterType<DataType<type>> \
+      REGISTER_VAR_NAME(BOOST_STRINGIZE(type));
 
 #define REGISTER_TYPE_BOOST(r, seq) REGISTER_TYPE(BOOST_PP_SEQ_ELEM(0, seq))
 

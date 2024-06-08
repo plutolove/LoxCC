@@ -32,11 +32,6 @@ std::string BlockStmt::to_string() const {
                      fmt::join(strs, "\n"), id);
 }
 
-ExpressionStmt::ExpressionStmt(Token token, const ExprPtr& stmt)
-    : token(token), expr(stmt) {}
-
-std::string ExpressionStmt::to_string() const { return expr->to_string(); }
-
 VarExpressionStmt::VarExpressionStmt(const ExprPtr& var, const ExprPtr& expr)
     : var(var), expr(expr) {}
 

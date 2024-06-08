@@ -3,17 +3,18 @@
 #include <unordered_map>
 
 #include "boost/preprocessor/cat.hpp"
+#include "common/log.h"
 
 namespace Lox {
 
-template <typename Base, typename Key, typename... Args>
+template <typename Base, typename Key>
 class AutoRegistrationFactory {
  public:
   template <typename Derived>
   struct RegisterType {
-    RegisterType(const Key& k, const Args&... args) {
+    RegisterType(const Key& k) {
       AutoRegistrationFactory<Base, Key>::Get().mutable_objects()->emplace(
-          k, std::make_shared<Derived>(args...));
+          k, std::make_shared<Derived>());
     }
   };
 
@@ -32,6 +33,7 @@ class AutoRegistrationFactory {
   }
 
   std::shared_ptr<Base> getShared(const Key& key) const {
+    INFO("msq --------------, type size: {}", Get().has_obj(key));
     return Get().get_shared_obj(key);
   }
 

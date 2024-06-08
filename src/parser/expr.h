@@ -107,6 +107,10 @@ class Literal : public ExprVisitorHelper<Literal> {
   template <typename T>
   Literal(T val, Token token) : value(val), token(token) {}
 
+  bool isInt() const { return (token.type == TokenType::INT); }
+  bool isFloat() const { return (token.type == TokenType::FLOAT); }
+  bool isStr() const { return (token.type == TokenType::STRING); }
+
   virtual std::string to_string() const override {
     if (token.type == TokenType::INT) {
       return fmt::format("{}", std::any_cast<int64_t>(value));
@@ -160,14 +164,14 @@ class Identifier : public ExprVisitorHelper<Identifier> {
 class Variable : public ExprVisitorHelper<Variable> {
  public:
   Variable(const std::string& name, const std::string& type)
-      : name(name), type(type) {}
+      : name(name), type_name(type) {}
 
   virtual std::string to_string() const override {
-    return fmt::format("var {}:{}", name, type);
+    return fmt::format("var {}:{}", name, type_name);
   }
 
   std::string name;
-  std::string type;
+  std::string type_name;
 };
 
 // 保存整个编译文件
@@ -199,6 +203,14 @@ class FunctionDef : public ExprVisitorHelper<FunctionDef> {
 
     return fmt::format("fn {}({}) -> {} {{ \n{}\n }}", function_name,
                        fmt::join(arg, ", "), return_type, body->to_string());
+  }
+
+  std::vector<DataTypePtr> getArgsType() const {
+    std::vector<DataTypePtr> args_type;
+    for (auto&& arg : params) {
+      args_type.push_back(arg->type);
+    }
+    return args_type;
   }
 
   std::string function_name;
@@ -252,24 +264,15 @@ class IfStmt : public ExprVisitorHelper<IfStmt> {
   ExprPtr else_block;
 };
 
-class ExpressionStmt : public ExprVisitorHelper<ExpressionStmt> {
- public:
-  ExpressionStmt(Token token, const ExprPtr& stmt);
-  virtual std::string to_string() const override;
-
-  Token token;
-  ExprPtr expr;
-};
-
-class VarExpressionStmt : public ExprVisitorHelper<ExpressionStmt> {
+class VarExpressionStmt : public ExprVisitorHelper<VarExpressionStmt> {
  public:
   VarExpressionStmt(const ExprPtr& var, const ExprPtr& stmt);
   VarExpressionStmt(const ExprPtr& var);
 
   virtual std::string to_string() const override;
 
-  ExprPtr var;
-  ExprPtr expr;
+  ExprPtr var;   // Variable
+  ExprPtr expr;  // expression value
 };
 
 class ReturnStmt : public ExprVisitorHelper<ReturnStmt> {

@@ -10,13 +10,13 @@ class VisitorBase {
 };
 
 template <typename R, typename Derived>
-class Visitor : VisitorBase<R> {
+class Visitor : virtual public VisitorBase<R> {
  public:
   using ValueType = Maybe<R>;
   virtual ValueType visit(Derived* ptr) = 0;
 };
 
-template <typename R = void, typename... Args>
+template <typename R, typename... Args>
 class VisitorHelper : public Visitor<R, Args>... {};
 
 }  // namespace Lox

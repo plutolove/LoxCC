@@ -10,18 +10,29 @@ add_repositories("local-repo https://github.com/plutolove/xmake-repo.git")
 
 add_cxxflags("-fuse-ld=lld")
 
-add_requires("libllvm 15.x", { configs = { shared = true } })
+add_requires("libllvm 18.x", { configs = { shared = true } })
+
 add_requires("fmt 10.0.0")
 add_requires("spdlog v1.11.0")
 add_requires("boost 1.84.0")
 add_requires("magic_enum v0.9.5")
 add_requires("gflags v2.2.2")
 
+rule("dep_gen")
+  before_build(function(target)
+    os.vrun("mlir-tblgen  --gen-dialect-decls ./src/ir/lox.td -o ./src/ir/Dialect.h.inc -I./src/ -I"..os.getenv("LLVM_ROOT").."/include/")
+	  os.vrun("mlir-tblgen  --gen-dialect-defs ./src/ir/lox.td -o ./src/ir/Dialect.cpp.inc -I./src/ -I"..os.getenv("LLVM_ROOT").."/include/")
+
+	  os.vrun("mlir-tblgen  --gen-op-decls ./src/ir/lox.td -o ./src/ir/loxOps.h.inc -I./src/ -I"..os.getenv("LLVM_ROOT").."/include/")
+	  os.vrun("mlir-tblgen  --gen-op-defs ./src/ir/lox.td -o ./src/ir/loxOps.cpp.inc -I./src/ -I"..os.getenv("LLVM_ROOT").."/include/")
+end)
+
 target("Lox")
     set_kind("binary")
     set_symbols("debug")
     set_strip("all")
     add_includedirs("./src")
+    add_rules("dep_gen")
     add_files("src/*/*.cpp")
     add_files("src/*/*/*.cpp")
     add_files("src/*.cpp")

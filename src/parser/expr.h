@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <any>
 #include <memory>
 #include <string>
@@ -195,14 +196,25 @@ class FunctionDef : public ExprVisitorHelper<FunctionDef> {
         return_type(return_type),
         body(body) {}
 
+  FunctionDef(const std::string& name, const std::vector<ExprPtr>& params,
+              const std::string& return_type, const std::vector<ExprPtr>& stmts)
+      : function_name(name),
+        params(params),
+        return_type(return_type),
+        stmts(stmts) {}
+
   virtual std::string to_string() const override {
     std::vector<std::string> arg;
-
+    std::vector<std::string> stmts_str;
     std::transform(params.begin(), params.end(), std::back_inserter(arg),
                    [](auto&& expr) { return expr->to_string(); });
 
+    std::transform(stmts.begin(), stmts.end(), std::back_inserter(stmts_str),
+                   [](auto&& val) { return val->to_string(); });
+
     return fmt::format("fn {}({}) -> {} {{ \n{}\n }}", function_name,
-                       fmt::join(arg, ", "), return_type, body->to_string());
+                       fmt::join(arg, ", "), return_type,
+                       fmt::join(stmts_str, "\n"));
   }
 
   std::vector<DataTypePtr> getArgsType() const {
@@ -216,6 +228,7 @@ class FunctionDef : public ExprVisitorHelper<FunctionDef> {
   std::string function_name;
   std::vector<ExprPtr> params;
   std::string return_type;
+  std::vector<ExprPtr> stmts;
   ExprPtr body;
 };
 

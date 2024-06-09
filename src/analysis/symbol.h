@@ -33,6 +33,9 @@ struct Symbol {
         type(type),
         args_type(args_type) {}
 
+  Symbol(const Symbol&) = default;
+  Symbol(Symbol&&) = default;
+
   bool isFunction() const { return SymbolType::Function == symbol_type; }
   bool isVariable() const { return SymbolType::Variable == symbol_type; }
 

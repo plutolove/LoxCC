@@ -33,7 +33,6 @@ class AutoRegistrationFactory {
   }
 
   std::shared_ptr<Base> getShared(const Key& key) const {
-    INFO("msq --------------, type size: {}", Get().has_obj(key));
     return Get().get_shared_obj(key);
   }
 

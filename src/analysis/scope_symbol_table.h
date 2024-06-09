@@ -3,14 +3,14 @@
 #include <unordered_set>
 
 #include "analysis/symbol.h"
+#include "boost/core/noncopyable.hpp"
 #include "common/maybe.h"
-#include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/ScopedHashTable.h"
 #include "llvm/ADT/StringRef.h"
 
 namespace Lox {
 
-struct Scope {
+struct Scope : boost::noncopyable {
   Scope(std::unique_ptr<llvm::ScopedHashTableScope<llvm::StringRef, Symbol>>
             scope,
         std::unordered_set<std::string>* ptr)
@@ -27,7 +27,7 @@ using ScopePtr = std::unique_ptr<Scope>;
 
 class ScopeSymbolTable {
  public:
-  ScopeSymbolTable() {}
+  ScopeSymbolTable() { global_scope = newScope(); }
 
   ScopePtr newScope();
 
@@ -44,8 +44,9 @@ class ScopeSymbolTable {
     return symbol_table.count(name);
   }
 
-  std::unordered_set<std::string> curr_scope_symbols;
-  llvm::ScopedHashTable<llvm::StringRef, Symbol> symbol_table;
+  std::unordered_set<std::string> curr_scope_symbols{};
+  llvm::ScopedHashTable<llvm::StringRef, Symbol> symbol_table{};
+  ScopePtr global_scope;
 };
 
 }  // namespace Lox

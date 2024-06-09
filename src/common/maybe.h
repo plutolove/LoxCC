@@ -96,8 +96,7 @@ class Maybe<T, guard::TypeGuard<std::is_same_v<T, void>>> {
   using ValueType = bool;
   using ErrorType = std::shared_ptr<ErrorProto>;
 
-  template <typename D>
-  Maybe(D&& d) : data_(true) {}
+  Maybe(bool d) : data_(true) {}
 
   Maybe(const ErrorType& err) : data_(err) {}
   Maybe(const ErrorProto& err) : data_(std::make_shared<ErrorProto>(err)) {}

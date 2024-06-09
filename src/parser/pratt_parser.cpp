@@ -5,6 +5,7 @@
 #include "common/auto_registration_factory.h"
 #include "common/log.h"
 #include "common/maybe.h"
+#include "common/type_trait.h"
 #include "parser/expr.h"
 #include "parser/rule/infix_parse_rule.h"
 #include "parser/rule/prefix_parse_rule.h"
@@ -143,8 +144,9 @@ Maybe<Expr> Parser::parseFunction() {
   auto ret_type = JUST(
       consume(TokenType::IDENTIFIER, "Expect identifier function return type"));
   auto body = JUST(parseStmts());
+  auto block = typeid_cast<BlockStmt*>(body.get());
   ret = std::make_shared<FunctionDef>(function_name->lexeme, *params,
-                                      ret_type->lexeme, body);
+                                      ret_type->lexeme, block->stmts);
   return ret;
 }
 

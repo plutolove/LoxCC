@@ -1,19 +1,24 @@
-fn test(a: i32) -> i32 {
-  return a*3+5;
+fn abs(a: i32) -> i32 {
+  var ret:i32;
+  if (a>0) {
+    ret = a;
+  } else {
+    ret = -a;
+  }
+  return ret;
 }
 
 fn main(a: i32) -> i32 {
-  var x: i32 = (-1*3+4);
-  y = x+2 + abs(-1*abs(34));
-  if (y > 34) {
-    x = x+345;
-  } else if (y < 34 and y > 4) {
-    x = 9*x;
+  var x: i32 = 23;
+  var y:i32;
+  y = x*4;
+  abs(x*y);
+  if (x>y) {
+    var x:f32 = 34.45;
+    y = x*y;
   } else {
-    x = 324;
-    {
-      y=2345;
-    }
+    var y:f32 = 34.45;
+    x = y+x;
   }
-  return 0;
+  return x*3;
 }

@@ -9,13 +9,13 @@
 namespace Lox {
 
 Maybe<void> Analysis::analysis(const ExprPtr& ast) {
-  return JUST(typeVisit(ast.get()));
+  auto var = JUST(typeVisit(ast.get()));
+  return true;
 }
 
 Maybe<void> Analysis::visit(Binary* binary) {
   JUST(typeVisit(binary->lhs.get()));
   JUST(typeVisit(binary->rhs.get()));
-  INFO("msq debug binary: {}", binary->to_string());
   binary->type = commonType(binary->lhs->type, binary->rhs->type);
   return true;
 }
@@ -23,6 +23,7 @@ Maybe<void> Analysis::visit(Binary* binary) {
 Maybe<void> Analysis::visit(Assign* assig) {
   JUST(typeVisit(assig->name.get()));
   JUST(typeVisit(assig->value.get()));
+
   if (not InstanceOf<Identifier>(assig->name)) {
     return NewErr("unknow variable name: {}", assig->name->to_string());
   }
@@ -67,15 +68,11 @@ Maybe<void> Analysis::visit(Grouping* group) {
 }
 
 Maybe<void> Analysis::visit(Literal* constant) {
-  INFO("00000000-------------------------");
   if (constant->isFloat()) {
     constant->type = JUST(data_type_manager.get("f64"));
-    INFO("---------msq debug, type: {}", constant->type->typeName());
   } else if (constant->isInt()) {
     constant->type = JUST(data_type_manager.get("i64"));
-    INFO("************msq debug, type: {}", constant->type->typeName());
   } else {
-    INFO("msq debug, type: {}", constant->type->typeName());
     return NewErr("not support type: {}", constant->to_string());
   }
   return true;
@@ -94,13 +91,18 @@ Maybe<void> Analysis::visit(Unary* binary) {
   return true;
 }
 
-Maybe<void> Analysis::visit(Identifier* binary) { return true; }
+Maybe<void> Analysis::visit(Identifier* ident) {
+  auto symbol = JUST(scope_symbol_table.getSymbol(ident->name));
+  ident->type = symbol->type;
+  return true;
+}
 
 Maybe<void> Analysis::visit(Variable* var) {
   auto dt = JUST(data_type_manager.get(var->type_name));
   var->type = dt;
   Symbol symbol{var->name, dt};
   scope_symbol_table.declar(var->name, symbol);
+
   return true;
 }
 
@@ -112,15 +114,21 @@ Maybe<void> Analysis::visit(Module* module_) {
 }
 
 Maybe<void> Analysis::visit(FunctionDef* func) {
-  auto scope = scope_symbol_table.newScope();
-  JUST(typeVisit(func->body.get()));
-  for (auto&& arg : func->params) {
-    JUST(typeVisit(arg.get()));
+  {
+    auto scope = scope_symbol_table.newScope();
+    for (auto& arg : func->params) {
+      JUST(typeVisit(arg.get()));
+    }
+
+    for (auto& stmt : func->stmts) {
+      JUST(typeVisit(stmt.get()));
+    }
   }
   auto ret_type = JUST(data_type_manager.get(func->return_type));
   auto args_type = func->getArgsType();
   Symbol symbol{func->function_name, ret_type, args_type};
-  scope_symbol_table.declar(func->function_name, symbol);
+  JUST(scope_symbol_table.declar(func->function_name, symbol));
+  func->type = ret_type;
   return true;
 }
 
@@ -149,7 +157,7 @@ Maybe<void> Analysis::visit(IfStmt* if_stmt) {
 
 Maybe<void> Analysis::visit(VarExpressionStmt* var_stmt) {
   JUST(typeVisit(var_stmt->var.get()));
-  JUST(typeVisit(var_stmt->expr.get()));
+  if (var_stmt->expr) JUST(typeVisit(var_stmt->expr.get()));
   if (not isSameType(var_stmt->var->type, var_stmt->expr->type)) {
     return NewErr("var type name not same, {}", var_stmt->to_string());
   }

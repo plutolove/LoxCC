@@ -8,6 +8,7 @@ add_rules("plugin.compile_commands.autoupdate", { outputdir = "build" })
 
 add_repositories("local-repo https://github.com/plutolove/xmake-repo.git")
 
+add_cxxflags("-fuse-ld=lld")
 
 add_requires("libllvm 15.x", { configs = { shared = true } })
 add_requires("fmt 10.0.0")
@@ -24,7 +25,6 @@ target("Lox")
     add_files("src/*/*.cpp")
     add_files("src/*/*/*.cpp")
     add_files("src/*.cpp")
-    add_cxxflags("-fuse-ld=lld")
     add_packages("fmt", "abseil", "spdlog", "boost", "magic_enum", "libllvm", "gflags")
 
 --

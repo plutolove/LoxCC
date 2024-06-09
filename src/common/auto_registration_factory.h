@@ -3,7 +3,6 @@
 #include <unordered_map>
 
 #include "boost/preprocessor/cat.hpp"
-#include "common/log.h"
 
 namespace Lox {
 

@@ -3,8 +3,6 @@
 #include <type_traits>
 
 #include "analysis/type_index.h"
-#include "boost/preprocessor/stringize.hpp"
-#include "common/auto_registration_factory.h"
 
 namespace Lox {
 template <typename T>

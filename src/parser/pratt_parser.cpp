@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "common/auto_registration_factory.h"
-#include "common/log.h"
 #include "common/maybe.h"
 #include "common/type_trait.h"
 #include "parser/expr.h"

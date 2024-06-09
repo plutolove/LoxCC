@@ -1,16 +1,9 @@
 #include <fstream>
-#include <memory>
 
 #include "analysis/analysis.h"
-#include "analysis/data_type.h"
-#include "analysis/scope_symbol_table.h"
-#include "analysis/symbol.h"
 #include "common/log.h"
 #include "common/maybe.h"
 #include "gflags/gflags.h"
-#include "llvm/ADT/ScopedHashTable.h"
-#include "llvm/ADT/StringRef.h"
-#include "llvm/Support/ErrorHandling.h"
 #include "parser/pratt_parser.h"
 #include "parser/scanner.h"
 
@@ -41,7 +34,6 @@ int main(int argc, char** argv) {
   if (not result.isOk()) {
     ERROR("analysis failed: {}", result.ErrMsg());
   }
-
   return 0;
 }
 

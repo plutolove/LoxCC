@@ -1,9 +1,8 @@
 add_rules("mode.debug", "mode.release")
 
 set_languages("c++17")
--- set_optimize("fastest")
-set_optimize("none")
-add_cxxflags("-fuse-ld=lld")
+set_optimize("fastest")
+-- set_optimize("none")
 
 add_rules("plugin.compile_commands.autoupdate", { outputdir = "build" })
 
@@ -25,6 +24,7 @@ target("Lox")
     add_files("src/*/*.cpp")
     add_files("src/*/*/*.cpp")
     add_files("src/*.cpp")
+    add_cxxflags("-fuse-ld=lld")
     add_packages("fmt", "abseil", "spdlog", "boost", "magic_enum", "libllvm", "gflags")
 
 --

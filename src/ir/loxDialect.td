@@ -8,7 +8,7 @@ def LoxDialect : Dialect {
   let cppNamespace = "::mlir::Lox";
   let summary = "Lox Dialect"; 
 
-  /* let hasConstantMaterializer = 1; */
+  let useDefaultTypePrinterParser = 1;
 }
 
 #endif

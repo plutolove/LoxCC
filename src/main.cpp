@@ -4,6 +4,7 @@
 #include "common/log.h"
 #include "common/maybe.h"
 #include "gflags/gflags.h"
+#include "ir/loxDialect.h"
 #include "llvm/Support/raw_ostream.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
@@ -14,7 +15,6 @@
 #include "mlir/Support/FileUtilities.h"
 #include "parser/pratt_parser.h"
 #include "parser/scanner.h"
-
 using namespace Lox;
 
 DEFINE_string(path, "", "");
@@ -48,6 +48,9 @@ DEFINE_string(path, "", "");
 //}
 using namespace mlir;
 int main(int argc, char** argv) {
+  mlir::DialectRegistry registry;
+  registry.insert<mlir::Lox::LoxDialect>();
+
   MLIRContext ctx;
   ctx.loadDialect<func::FuncDialect, arith::ArithDialect>();
 

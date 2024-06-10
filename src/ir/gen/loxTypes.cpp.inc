@@ -103,6 +103,31 @@ int PolynomialType::getDegreeBound() const {
 } // namespace Lox
 } // namespace mlir
 MLIR_DEFINE_EXPLICIT_TYPE_ID(::mlir::Lox::PolynomialType)
+namespace mlir {
+namespace Lox {
+
+/// Parse a type registered to this dialect.
+::mlir::Type LoxDialect::parseType(::mlir::DialectAsmParser &parser) const {
+  ::llvm::SMLoc typeLoc = parser.getCurrentLocation();
+  ::llvm::StringRef mnemonic;
+  ::mlir::Type genType;
+  auto parseResult = generatedTypeParser(parser, &mnemonic, genType);
+  if (parseResult.has_value())
+    return genType;
+  
+  parser.emitError(typeLoc) << "unknown  type `"
+      << mnemonic << "` in dialect `" << getNamespace() << "`";
+  return {};
+}
+/// Print a type registered to this dialect.
+void LoxDialect::printType(::mlir::Type type,
+                    ::mlir::DialectAsmPrinter &printer) const {
+  if (::mlir::succeeded(generatedTypePrinter(type, printer)))
+    return;
+  
+}
+} // namespace Lox
+} // namespace mlir
 
 #endif  // GET_TYPEDEF_CLASSES
 

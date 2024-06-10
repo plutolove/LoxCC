@@ -1,24 +1,19 @@
 /*===- TableGen'erated file -------------------------------------*- C++ -*-===*\
 |*                                                                            *|
-|* Dialect Declarations                                                       *|
+|* Op Declarations                                                            *|
 |*                                                                            *|
 |* Automatically generated file, do not edit!                                 *|
 |* From: lox.td                                                               *|
 |*                                                                            *|
 \*===----------------------------------------------------------------------===*/
 
-namespace Lox {
+#if defined(GET_OP_CLASSES) || defined(GET_OP_FWD_DEFINES)
+#undef GET_OP_FWD_DEFINES
+#endif
 
-class LoxDialect : public ::mlir::Dialect {
-  explicit LoxDialect(::mlir::MLIRContext *context);
+#ifdef GET_OP_CLASSES
+#undef GET_OP_CLASSES
 
-  void initialize();
-  friend class ::mlir::MLIRContext;
-public:
-  ~LoxDialect() override;
-  static constexpr ::llvm::StringLiteral getDialectNamespace() {
-    return ::llvm::StringLiteral("Lox");
-  }
-};
-} // namespace Lox
-MLIR_DECLARE_EXPLICIT_TYPE_ID(::Lox::LoxDialect)
+
+#endif  // GET_OP_CLASSES
+

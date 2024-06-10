@@ -3,5 +3,6 @@
 
 include "ir/loxDialect.td"
 include "ir/loxOps.td"
+include "ir/loxTypes.td"
 
 #endif

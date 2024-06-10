@@ -20,19 +20,23 @@ add_requires("gflags v2.2.2")
 
 rule("dep_gen")
   before_build(function(target)
-    os.vrun("mlir-tblgen  --gen-dialect-decls ./src/ir/lox.td -o ./src/ir/Dialect.h.inc -I./src/ -I"..os.getenv("LLVM_ROOT").."/include/")
-	  os.vrun("mlir-tblgen  --gen-dialect-defs ./src/ir/lox.td -o ./src/ir/Dialect.cpp.inc -I./src/ -I"..os.getenv("LLVM_ROOT").."/include/")
+    os.vrun("mlir-tblgen  --gen-dialect-decls ./src/ir/lox.td -o ./src/ir/gen/Dialect.h.inc -I./src/ -I"..os.getenv("LLVM_ROOT").."/include/")
+	  os.vrun("mlir-tblgen  --gen-dialect-defs ./src/ir/lox.td -o ./src/ir/gen/Dialect.cpp.inc -I./src/ -I"..os.getenv("LLVM_ROOT").."/include/")
 
-	  os.vrun("mlir-tblgen  --gen-op-decls ./src/ir/lox.td -o ./src/ir/loxOps.h.inc -I./src/ -I"..os.getenv("LLVM_ROOT").."/include/")
-	  os.vrun("mlir-tblgen  --gen-op-defs ./src/ir/lox.td -o ./src/ir/loxOps.cpp.inc -I./src/ -I"..os.getenv("LLVM_ROOT").."/include/")
+	  os.vrun("mlir-tblgen  --gen-op-decls ./src/ir/lox.td -o ./src/ir/gen/loxOps.h.inc -I./src/ -I"..os.getenv("LLVM_ROOT").."/include/")
+	  os.vrun("mlir-tblgen  --gen-op-defs ./src/ir/lox.td -o ./src/ir/gen/loxOps.cpp.inc -I./src/ -I"..os.getenv("LLVM_ROOT").."/include/")
+
+    os.vrun("mlir-tblgen  --gen-typedef-decls ./src/ir/lox.td -o ./src/ir/gen/loxTypes.h.inc -I./src/ -I"..os.getenv("LLVM_ROOT").."/include/")
+	  os.vrun("mlir-tblgen  --gen-typedef-defs ./src/ir/lox.td -o ./src/ir/gen/loxTypes.cpp.inc -I./src/ -I"..os.getenv("LLVM_ROOT").."/include/")
+
 end)
 
 target("Lox")
+    add_rules("dep_gen")
     set_kind("binary")
     set_symbols("debug")
     set_strip("all")
     add_includedirs("./src")
-    add_rules("dep_gen")
     add_files("src/*/*.cpp")
     add_files("src/*/*/*.cpp")
     add_files("src/*.cpp")

@@ -12,10 +12,10 @@ include "mlir/IR/RegionKindInterface.td"
 class LoxOp<string mnemonic, list<Trait> traits = []> :
     Op<LoxDialect, mnemonic, traits>;
 
-def ConstantOp : LoxOp<"const", [Pure]> {
-  let summary = "const operation";
-  let arguments = (ins APIntAttr:$value);
-  let results = (outs AnyInteger:$result);
-}
+/* def ConstantOp : LoxOp<"const", [Pure]> { */
+/*   let summary = "const operation"; */
+/*   let arguments = (ins APIntAttr:$value); */
+/*   let results = (outs AnyInteger:$result); */
+/* } */
 
 #endif

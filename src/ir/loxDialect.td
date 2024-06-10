@@ -5,8 +5,10 @@ include "mlir/IR/OpBase.td"
 
 def LoxDialect : Dialect {
   let name = "Lox";
-  let cppNamespace = "::Lox";
-  let summary = "Toy Dialect"; 
+  let cppNamespace = "::mlir::Lox";
+  let summary = "Lox Dialect"; 
+
+  /* let hasConstantMaterializer = 1; */
 }
 
 #endif

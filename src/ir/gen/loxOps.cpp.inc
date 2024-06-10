@@ -1,21 +1,21 @@
 /*===- TableGen'erated file -------------------------------------*- C++ -*-===*\
 |*                                                                            *|
-|* Dialect Definitions                                                        *|
+|* Op Definitions                                                             *|
 |*                                                                            *|
 |* Automatically generated file, do not edit!                                 *|
 |* From: lox.td                                                               *|
 |*                                                                            *|
 \*===----------------------------------------------------------------------===*/
 
-MLIR_DEFINE_EXPLICIT_TYPE_ID(::Lox::LoxDialect)
-namespace Lox {
+#ifdef GET_OP_LIST
+#undef GET_OP_LIST
 
-LoxDialect::LoxDialect(::mlir::MLIRContext *context)
-    : ::mlir::Dialect(getDialectNamespace(), context, ::mlir::TypeID::get<LoxDialect>()) {
-  
-  initialize();
-}
 
-LoxDialect::~LoxDialect() = default;
+#endif  // GET_OP_LIST
 
-} // namespace Lox
+#ifdef GET_OP_CLASSES
+#undef GET_OP_CLASSES
+
+
+#endif  // GET_OP_CLASSES
+

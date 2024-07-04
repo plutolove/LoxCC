@@ -19,4 +19,14 @@ class Visitor : virtual public VisitorBase<R> {
 template <typename R, typename... Args>
 class VisitorHelper : public Visitor<R, Args>... {};
 
+template <typename R, typename Derived, typename Base>
+class VisitorH : public Base {
+ public:
+  using ValueType = Maybe<R>;
+  virtual ValueType visit(Derived* ptr) = 0;
+};
+
+template <typename R, typename T, typename Base>
+class VisitorDerived : public VisitorH<R, T, Base> {};
+
 }  // namespace Lox

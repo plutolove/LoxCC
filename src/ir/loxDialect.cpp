@@ -24,7 +24,7 @@ void LoxDialect::initialize() {
       >();
   addOperations<
 #define GET_OP_LIST
-#include "ir/gen/loxTypes.cpp.inc"
+#include "ir/gen/loxOps.cpp.inc"
       >();
 }
 

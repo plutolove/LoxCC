@@ -19,6 +19,7 @@
 #include "mlir/Support/FileUtilities.h"
 #include "parser/pratt_parser.h"
 #include "parser/scanner.h"
+#include "parser/visitor_helper.h"
 
 using namespace mlir;
 
@@ -117,6 +118,11 @@ int main(int argc, char** argv) {
   std::string* str_val = new ((void*)str_ptr) std::string("345w345645");
   INFO("str: {}", *str_val);
   Destructor<std::string>::free(str_val);
+  INFO("{}, {}", sizeof(::Lox::AstVisitorHelper), sizeof(::Lox::VisitorImpl));
 
+  char pp[sizeof(std::string)];
+  auto* str__ptr = new (pp) std::string("placement new-----------");
+  INFO("str: {}", *str__ptr);
+  str__ptr->~basic_string();
   return 0;
 }

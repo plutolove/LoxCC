@@ -30,9 +30,9 @@ namespace Lox {
 static ::mlir::LogicalResult __mlir_ods_local_type_constraint_lox0(
     ::mlir::Operation *op, ::mlir::Type type, ::llvm::StringRef valueKind,
     unsigned valueIndex) {
-  if (!((true))) {
+  if (!((::llvm::isa<StructType>(type)))) {
     return op->emitOpError(valueKind) << " #" << valueIndex
-        << " must be variadic of any type, but got " << type;
+        << " must be variadic of lox struct type, but got " << type;
   }
   return ::mlir::success();
 }
@@ -40,9 +40,9 @@ static ::mlir::LogicalResult __mlir_ods_local_type_constraint_lox0(
 static ::mlir::LogicalResult __mlir_ods_local_type_constraint_lox1(
     ::mlir::Operation *op, ::mlir::Type type, ::llvm::StringRef valueKind,
     unsigned valueIndex) {
-  if (!((true))) {
+  if (!((::llvm::isa<StructType>(type)))) {
     return op->emitOpError(valueKind) << " #" << valueIndex
-        << " must be any type, but got " << type;
+        << " must be lox struct type, but got " << type;
   }
   return ::mlir::success();
 }
@@ -57,11 +57,21 @@ static ::mlir::LogicalResult __mlir_ods_local_type_constraint_lox2(
   return ::mlir::success();
 }
 
+static ::mlir::LogicalResult __mlir_ods_local_type_constraint_lox3(
+    ::mlir::Operation *op, ::mlir::Type type, ::llvm::StringRef valueKind,
+    unsigned valueIndex) {
+  if (!((true))) {
+    return op->emitOpError(valueKind) << " #" << valueIndex
+        << " must be any type, but got " << type;
+  }
+  return ::mlir::success();
+}
+
 static ::mlir::LogicalResult __mlir_ods_local_attr_constraint_lox0(
     ::mlir::Attribute attr, ::llvm::StringRef attrName, llvm::function_ref<::mlir::InFlightDiagnostic()> emitError) {
-  if (attr && !((::llvm::isa<::mlir::SymbolRefAttr>(attr))))
+  if (attr && !((::llvm::isa<::mlir::FlatSymbolRefAttr>(attr))))
     return emitError() << "attribute '" << attrName
-        << "' failed to satisfy constraint: symbol reference attribute";
+        << "' failed to satisfy constraint: flat symbol reference attribute";
   return ::mlir::success();
 }
 static ::mlir::LogicalResult __mlir_ods_local_attr_constraint_lox0(
@@ -175,14 +185,14 @@ std::pair<unsigned, unsigned> CallOpGenericAdaptorBase::getODSOperandIndexAndLen
   return odsAttrs;
 }
 
-::mlir::SymbolRefAttr CallOpGenericAdaptorBase::getCalleeAttr() {
-  auto attr = ::llvm::cast<::mlir::SymbolRefAttr>(getProperties().callee);
+::mlir::FlatSymbolRefAttr CallOpGenericAdaptorBase::getCalleeAttr() {
+  auto attr = ::llvm::cast<::mlir::FlatSymbolRefAttr>(getProperties().callee);
   return attr;
 }
 
-::mlir::SymbolRefAttr CallOpGenericAdaptorBase::getCallee() {
+::llvm::StringRef CallOpGenericAdaptorBase::getCallee() {
   auto attr = getCalleeAttr();
-  return attr;
+  return attr.getValue();
 }
 
 } // namespace detail
@@ -192,8 +202,8 @@ CallOpAdaptor::CallOpAdaptor(CallOp op) : CallOpGenericAdaptor(op->getOperands()
   auto tblgen_callee = getProperties().callee; (void)tblgen_callee;
   if (!tblgen_callee) return emitError(loc, "'Lox.call' op ""requires attribute 'callee'");
 
-  if (tblgen_callee && !((::llvm::isa<::mlir::SymbolRefAttr>(tblgen_callee))))
-    return emitError(loc, "'Lox.call' op ""attribute 'callee' failed to satisfy constraint: symbol reference attribute");
+  if (tblgen_callee && !((::llvm::isa<::mlir::FlatSymbolRefAttr>(tblgen_callee))))
+    return emitError(loc, "'Lox.call' op ""attribute 'callee' failed to satisfy constraint: flat symbol reference attribute");
   return ::mlir::success();
 }
 
@@ -221,11 +231,11 @@ std::pair<unsigned, unsigned> CallOp::getODSOperandIndexAndLength(unsigned index
            std::next(getOperation()->operand_begin(), valueRange.first + valueRange.second)};
 }
 
-::mlir::Operation::operand_range CallOp::getArgOperands() {
+::mlir::Operation::operand_range CallOp::getInputs() {
   return getODSOperands(0);
 }
 
-::mlir::MutableOperandRange CallOp::getArgOperandsMutable() {
+::mlir::MutableOperandRange CallOp::getInputsMutable() {
   auto range = getODSOperandIndexAndLength(0);
   auto mutableRange = ::mlir::MutableOperandRange(getOperation(), range.first, range.second);
   return mutableRange;
@@ -239,10 +249,6 @@ std::pair<unsigned, unsigned> CallOp::getODSResultIndexAndLength(unsigned index)
   auto valueRange = getODSResultIndexAndLength(index);
   return {std::next(getOperation()->result_begin(), valueRange.first),
            std::next(getOperation()->result_begin(), valueRange.first + valueRange.second)};
-}
-
-::mlir::Value CallOp::getResult() {
-  return ::llvm::cast<::mlir::Value>(*getODSResults(0).begin());
 }
 
 ::mlir::LogicalResult CallOp::setPropertiesFromAttr(Properties &prop, ::mlir::Attribute attr, ::llvm::function_ref<::mlir::InFlightDiagnostic()> emitError) {
@@ -332,28 +338,45 @@ void CallOp::writeProperties(::mlir::DialectBytecodeWriter &writer) {
   writer.writeAttribute(prop.callee);
 }
 
-::mlir::SymbolRefAttr CallOp::getCalleeAttr() {
-  return ::llvm::cast<::mlir::SymbolRefAttr>(getProperties().callee);
+::mlir::FlatSymbolRefAttr CallOp::getCalleeAttr() {
+  return ::llvm::cast<::mlir::FlatSymbolRefAttr>(getProperties().callee);
 }
 
-::mlir::SymbolRefAttr CallOp::getCallee() {
+::llvm::StringRef CallOp::getCallee() {
   auto attr = getCalleeAttr();
-  return attr;
+  return attr.getValue();
 }
 
-void CallOp::setCalleeAttr(::mlir::SymbolRefAttr attr) {
+void CallOp::setCalleeAttr(::mlir::FlatSymbolRefAttr attr) {
   (*this)->setAttr(getCalleeAttrName(), attr);
 }
 
-void CallOp::build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::mlir::Type result, ::mlir::SymbolRefAttr callee, ::mlir::ValueRange arg_operands) {
-  odsState.addOperands(arg_operands);
-  odsState.getOrAddProperties<Properties>().callee = callee;
-  odsState.addTypes(result);
+void CallOp::setCallee(::llvm::StringRef attrValue) {
+  (*this)->setAttr(getCalleeAttrName(), ::mlir::SymbolRefAttr::get(::mlir::Builder((*this)->getContext()).getContext(), attrValue));
 }
 
-void CallOp::build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::mlir::TypeRange resultTypes, ::mlir::SymbolRefAttr callee, ::mlir::ValueRange arg_operands) {
-  odsState.addOperands(arg_operands);
+void CallOp::build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::mlir::Type resultType0, ::mlir::FlatSymbolRefAttr callee, ::mlir::ValueRange inputs) {
+  odsState.addOperands(inputs);
   odsState.getOrAddProperties<Properties>().callee = callee;
+  odsState.addTypes(resultType0);
+}
+
+void CallOp::build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::mlir::TypeRange resultTypes, ::mlir::FlatSymbolRefAttr callee, ::mlir::ValueRange inputs) {
+  odsState.addOperands(inputs);
+  odsState.getOrAddProperties<Properties>().callee = callee;
+  assert(resultTypes.size() == 1u && "mismatched number of results");
+  odsState.addTypes(resultTypes);
+}
+
+void CallOp::build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::mlir::Type resultType0, ::llvm::StringRef callee, ::mlir::ValueRange inputs) {
+  odsState.addOperands(inputs);
+  odsState.getOrAddProperties<Properties>().callee = ::mlir::SymbolRefAttr::get(odsBuilder.getContext(), callee);
+  odsState.addTypes(resultType0);
+}
+
+void CallOp::build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::mlir::TypeRange resultTypes, ::llvm::StringRef callee, ::mlir::ValueRange inputs) {
+  odsState.addOperands(inputs);
+  odsState.getOrAddProperties<Properties>().callee = ::mlir::SymbolRefAttr::get(odsBuilder.getContext(), callee);
   assert(resultTypes.size() == 1u && "mismatched number of results");
   odsState.addTypes(resultTypes);
 }
@@ -397,11 +420,11 @@ void CallOp::build(::mlir::OpBuilder &, ::mlir::OperationState &odsState, ::mlir
 }
 
 ::mlir::ParseResult CallOp::parse(::mlir::OpAsmParser &parser, ::mlir::OperationState &result) {
-  ::mlir::SymbolRefAttr calleeAttr;
-  ::llvm::SmallVector<::mlir::OpAsmParser::UnresolvedOperand, 4> arg_operandsOperands;
-  ::llvm::SMLoc arg_operandsOperandsLoc;
-  (void)arg_operandsOperandsLoc;
-  ::llvm::ArrayRef<::mlir::Type> arg_operandsTypes;
+  ::mlir::FlatSymbolRefAttr calleeAttr;
+  ::llvm::SmallVector<::mlir::OpAsmParser::UnresolvedOperand, 4> inputsOperands;
+  ::llvm::SMLoc inputsOperandsLoc;
+  (void)inputsOperandsLoc;
+  ::llvm::ArrayRef<::mlir::Type> inputsTypes;
   ::llvm::ArrayRef<::mlir::Type> allResultTypes;
 
   if (parser.parseCustomAttributeWithFallback(calleeAttr, parser.getBuilder().getType<::mlir::NoneType>())) {
@@ -411,8 +434,8 @@ void CallOp::build(::mlir::OpBuilder &, ::mlir::OperationState &odsState, ::mlir
   if (parser.parseLParen())
     return ::mlir::failure();
 
-  arg_operandsOperandsLoc = parser.getCurrentLocation();
-  if (parser.parseOperandList(arg_operandsOperands))
+  inputsOperandsLoc = parser.getCurrentLocation();
+  if (parser.parseOperandList(inputsOperands))
     return ::mlir::failure();
   if (parser.parseRParen())
     return ::mlir::failure();
@@ -428,13 +451,13 @@ void CallOp::build(::mlir::OpBuilder &, ::mlir::OperationState &odsState, ::mlir
   if (parser.parseColon())
     return ::mlir::failure();
 
-  ::mlir::FunctionType arg_operands__allResult_functionType;
-  if (parser.parseType(arg_operands__allResult_functionType))
+  ::mlir::FunctionType inputs__allResult_functionType;
+  if (parser.parseType(inputs__allResult_functionType))
     return ::mlir::failure();
-  arg_operandsTypes = arg_operands__allResult_functionType.getInputs();
-  allResultTypes = arg_operands__allResult_functionType.getResults();
+  inputsTypes = inputs__allResult_functionType.getInputs();
+  allResultTypes = inputs__allResult_functionType.getResults();
   result.addTypes(allResultTypes);
-  if (parser.resolveOperands(arg_operandsOperands, arg_operandsTypes, arg_operandsOperandsLoc, result.operands))
+  if (parser.resolveOperands(inputsOperands, inputsTypes, inputsOperandsLoc, result.operands))
     return ::mlir::failure();
   return ::mlir::success();
 }
@@ -443,14 +466,14 @@ void CallOp::print(::mlir::OpAsmPrinter &_odsPrinter) {
   _odsPrinter << ' ';
   _odsPrinter.printAttributeWithoutType(getCalleeAttr());
   _odsPrinter << "(";
-  _odsPrinter << getArgOperands();
+  _odsPrinter << getInputs();
   _odsPrinter << ")";
   ::llvm::SmallVector<::llvm::StringRef, 2> elidedAttrs;
   elidedAttrs.push_back("callee");
   _odsPrinter.printOptionalAttrDict((*this)->getAttrs(), elidedAttrs);
   _odsPrinter << ' ' << ":";
   _odsPrinter << ' ';
-  _odsPrinter.printFunctionalType(getArgOperands().getTypes(), getOperation()->getResultTypes());
+  _odsPrinter.printFunctionalType(getInputs().getTypes(), getOperation()->getResultTypes());
 }
 
 } // namespace Lox
@@ -1098,68 +1121,6 @@ void FuncOp::setResAttrsAttr(::mlir::ArrayAttr attr) {
     return attr;
 }
 
-void FuncOp::build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::mlir::StringAttr sym_name, ::mlir::TypeAttr function_type, /*optional*/::mlir::ArrayAttr arg_attrs, /*optional*/::mlir::ArrayAttr res_attrs) {
-  odsState.getOrAddProperties<Properties>().sym_name = sym_name;
-  odsState.getOrAddProperties<Properties>().function_type = function_type;
-  if (arg_attrs) {
-    odsState.getOrAddProperties<Properties>().arg_attrs = arg_attrs;
-  }
-  if (res_attrs) {
-    odsState.getOrAddProperties<Properties>().res_attrs = res_attrs;
-  }
-  (void)odsState.addRegion();
-}
-
-void FuncOp::build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::mlir::TypeRange resultTypes, ::mlir::StringAttr sym_name, ::mlir::TypeAttr function_type, /*optional*/::mlir::ArrayAttr arg_attrs, /*optional*/::mlir::ArrayAttr res_attrs) {
-  odsState.getOrAddProperties<Properties>().sym_name = sym_name;
-  odsState.getOrAddProperties<Properties>().function_type = function_type;
-  if (arg_attrs) {
-    odsState.getOrAddProperties<Properties>().arg_attrs = arg_attrs;
-  }
-  if (res_attrs) {
-    odsState.getOrAddProperties<Properties>().res_attrs = res_attrs;
-  }
-  (void)odsState.addRegion();
-  assert(resultTypes.size() == 0u && "mismatched number of results");
-  odsState.addTypes(resultTypes);
-}
-
-void FuncOp::build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::llvm::StringRef sym_name, ::mlir::FunctionType function_type, /*optional*/::mlir::ArrayAttr arg_attrs, /*optional*/::mlir::ArrayAttr res_attrs) {
-  odsState.getOrAddProperties<Properties>().sym_name = odsBuilder.getStringAttr(sym_name);
-  odsState.getOrAddProperties<Properties>().function_type = ::mlir::TypeAttr::get(function_type);
-  if (arg_attrs) {
-    odsState.getOrAddProperties<Properties>().arg_attrs = arg_attrs;
-  }
-  if (res_attrs) {
-    odsState.getOrAddProperties<Properties>().res_attrs = res_attrs;
-  }
-  (void)odsState.addRegion();
-}
-
-void FuncOp::build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::mlir::TypeRange resultTypes, ::llvm::StringRef sym_name, ::mlir::FunctionType function_type, /*optional*/::mlir::ArrayAttr arg_attrs, /*optional*/::mlir::ArrayAttr res_attrs) {
-  odsState.getOrAddProperties<Properties>().sym_name = odsBuilder.getStringAttr(sym_name);
-  odsState.getOrAddProperties<Properties>().function_type = ::mlir::TypeAttr::get(function_type);
-  if (arg_attrs) {
-    odsState.getOrAddProperties<Properties>().arg_attrs = arg_attrs;
-  }
-  if (res_attrs) {
-    odsState.getOrAddProperties<Properties>().res_attrs = res_attrs;
-  }
-  (void)odsState.addRegion();
-  assert(resultTypes.size() == 0u && "mismatched number of results");
-  odsState.addTypes(resultTypes);
-}
-
-void FuncOp::build(::mlir::OpBuilder &, ::mlir::OperationState &odsState, ::mlir::TypeRange resultTypes, ::mlir::ValueRange operands, ::llvm::ArrayRef<::mlir::NamedAttribute> attributes) {
-  assert(operands.size() == 0u && "mismatched number of parameters");
-  odsState.addOperands(operands);
-  odsState.addAttributes(attributes);
-  for (unsigned i = 0; i != 1; ++i)
-    (void)odsState.addRegion();
-  assert(resultTypes.size() == 0u && "mismatched number of return types");
-  odsState.addTypes(resultTypes);
-}
-
 ::mlir::LogicalResult FuncOp::verifyInvariantsImpl() {
   auto tblgen_arg_attrs = getProperties().arg_attrs; (void)tblgen_arg_attrs;
   auto tblgen_function_type = getProperties().function_type; (void)tblgen_function_type;
@@ -1279,7 +1240,7 @@ void ReturnOp::build(::mlir::OpBuilder &, ::mlir::OperationState &odsState, ::ml
     auto valueGroup0 = getODSOperands(0);
 
     for (auto v : valueGroup0) {
-      if (::mlir::failed(__mlir_ods_local_type_constraint_lox1(*this, v.getType(), "operand", index++)))
+      if (::mlir::failed(__mlir_ods_local_type_constraint_lox3(*this, v.getType(), "operand", index++)))
         return ::mlir::failure();
     }
   }

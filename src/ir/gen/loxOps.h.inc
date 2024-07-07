@@ -50,14 +50,14 @@ namespace detail {
 class CallOpGenericAdaptorBase {
 public:
   struct Properties {
-    using calleeTy = ::mlir::SymbolRefAttr;
+    using calleeTy = ::mlir::FlatSymbolRefAttr;
     calleeTy callee;
 
     auto getCallee() {
       auto &propStorage = this->callee;
-      return ::llvm::cast<::mlir::SymbolRefAttr>(propStorage);
+      return ::llvm::cast<::mlir::FlatSymbolRefAttr>(propStorage);
     }
-    void setCallee(const ::mlir::SymbolRefAttr &propValue) {
+    void setCallee(const ::mlir::FlatSymbolRefAttr &propValue) {
       this->callee = propValue;
     }
     bool operator==(const Properties &rhs) const {
@@ -85,8 +85,8 @@ public:
   }
 
   ::mlir::DictionaryAttr getAttributes();
-  ::mlir::SymbolRefAttr getCalleeAttr();
-  ::mlir::SymbolRefAttr getCallee();
+  ::mlir::FlatSymbolRefAttr getCalleeAttr();
+  ::llvm::StringRef getCallee();
 };
 } // namespace detail
 template <typename RangeT>
@@ -111,7 +111,7 @@ public:
              std::next(odsOperands.begin(), valueRange.first + valueRange.second)};
   }
 
-  RangeT getArgOperands() {
+  RangeT getInputs() {
     return getODSOperands(0);
   }
 
@@ -157,11 +157,10 @@ public:
 
   std::pair<unsigned, unsigned> getODSOperandIndexAndLength(unsigned index);
   ::mlir::Operation::operand_range getODSOperands(unsigned index);
-  ::mlir::Operation::operand_range getArgOperands();
-  ::mlir::MutableOperandRange getArgOperandsMutable();
+  ::mlir::Operation::operand_range getInputs();
+  ::mlir::MutableOperandRange getInputsMutable();
   std::pair<unsigned, unsigned> getODSResultIndexAndLength(unsigned index);
   ::mlir::Operation::result_range getODSResults(unsigned index);
-  ::mlir::Value getResult();
   static ::mlir::LogicalResult setPropertiesFromAttr(Properties &prop, ::mlir::Attribute attr, ::llvm::function_ref<::mlir::InFlightDiagnostic()> emitError);
   static ::mlir::Attribute getPropertiesAsAttr(::mlir::MLIRContext *ctx, const Properties &prop);
   static llvm::hash_code computePropertiesHash(const Properties &prop);
@@ -171,14 +170,22 @@ public:
   static ::mlir::LogicalResult verifyInherentAttrs(::mlir::OperationName opName, ::mlir::NamedAttrList &attrs, llvm::function_ref<::mlir::InFlightDiagnostic()> emitError);
   static ::mlir::LogicalResult readProperties(::mlir::DialectBytecodeReader &reader, ::mlir::OperationState &state);
   void writeProperties(::mlir::DialectBytecodeWriter &writer);
-  ::mlir::SymbolRefAttr getCalleeAttr();
-  ::mlir::SymbolRefAttr getCallee();
-  void setCalleeAttr(::mlir::SymbolRefAttr attr);
-  static void build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::mlir::Type result, ::mlir::SymbolRefAttr callee, ::mlir::ValueRange arg_operands);
-  static void build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::mlir::TypeRange resultTypes, ::mlir::SymbolRefAttr callee, ::mlir::ValueRange arg_operands);
+  ::mlir::FlatSymbolRefAttr getCalleeAttr();
+  ::llvm::StringRef getCallee();
+  void setCalleeAttr(::mlir::FlatSymbolRefAttr attr);
+  void setCallee(::llvm::StringRef attrValue);
+  static void build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, StringRef callee, ArrayRef<Value> arguments);
+  static void build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::mlir::Type resultType0, ::mlir::FlatSymbolRefAttr callee, ::mlir::ValueRange inputs);
+  static void build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::mlir::TypeRange resultTypes, ::mlir::FlatSymbolRefAttr callee, ::mlir::ValueRange inputs);
+  static void build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::mlir::Type resultType0, ::llvm::StringRef callee, ::mlir::ValueRange inputs);
+  static void build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::mlir::TypeRange resultTypes, ::llvm::StringRef callee, ::mlir::ValueRange inputs);
   static void build(::mlir::OpBuilder &, ::mlir::OperationState &odsState, ::mlir::TypeRange resultTypes, ::mlir::ValueRange operands, ::llvm::ArrayRef<::mlir::NamedAttribute> attributes = {});
   ::mlir::LogicalResult verifyInvariantsImpl();
   ::mlir::LogicalResult verifyInvariants();
+  ::mlir::CallInterfaceCallable getCallableForCallee();
+  void setCalleeFromCallable(::mlir::CallInterfaceCallable callee);
+  ::mlir::Operation::operand_range getArgOperands();
+  ::mlir::MutableOperandRange getArgOperandsMutable();
   static ::mlir::ParseResult parse(::mlir::OpAsmParser &parser, ::mlir::OperationState &result);
   void print(::mlir::OpAsmPrinter &_odsPrinter);
 private:
@@ -195,8 +202,6 @@ private:
   }
 
 public:
-  mlir::CallInterfaceCallable getCallableForCallee() { return getCalleeAttr(); }
-  void setCalleeFromCallable(mlir::CallInterfaceCallable callee) { setCalleeAttr(callee.get<mlir::SymbolRefAttr>()); }
 };
 } // namespace Lox
 } // namespace mlir
@@ -484,7 +489,7 @@ public:
 
   ::mlir::LogicalResult verify(::mlir::Location loc);
 };
-class FuncOp : public ::mlir::Op<FuncOp, ::mlir::OpTrait::OneRegion, ::mlir::OpTrait::ZeroResults, ::mlir::OpTrait::ZeroSuccessors, ::mlir::OpTrait::ZeroOperands, ::mlir::OpTrait::OpInvariants, ::mlir::BytecodeOpInterface::Trait, ::mlir::OpTrait::IsIsolatedFromAbove, ::mlir::SymbolOpInterface::Trait, ::mlir::CallableOpInterface::Trait, ::mlir::FunctionOpInterface::Trait, ::mlir::RegionKindInterface::Trait> {
+class FuncOp : public ::mlir::Op<FuncOp, ::mlir::OpTrait::OneRegion, ::mlir::OpTrait::ZeroResults, ::mlir::OpTrait::ZeroSuccessors, ::mlir::OpTrait::ZeroOperands, ::mlir::OpTrait::OpInvariants, ::mlir::BytecodeOpInterface::Trait, ::mlir::OpTrait::IsIsolatedFromAbove, ::mlir::SymbolOpInterface::Trait, ::mlir::CallableOpInterface::Trait, ::mlir::FunctionOpInterface::Trait> {
 public:
   using Op::Op;
   using Op::print;
@@ -564,11 +569,9 @@ public:
   void setResAttrsAttr(::mlir::ArrayAttr attr);
   ::mlir::Attribute removeArgAttrsAttr();
   ::mlir::Attribute removeResAttrsAttr();
-  static void build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::mlir::StringAttr sym_name, ::mlir::TypeAttr function_type, /*optional*/::mlir::ArrayAttr arg_attrs, /*optional*/::mlir::ArrayAttr res_attrs);
-  static void build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::mlir::TypeRange resultTypes, ::mlir::StringAttr sym_name, ::mlir::TypeAttr function_type, /*optional*/::mlir::ArrayAttr arg_attrs, /*optional*/::mlir::ArrayAttr res_attrs);
-  static void build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::llvm::StringRef sym_name, ::mlir::FunctionType function_type, /*optional*/::mlir::ArrayAttr arg_attrs, /*optional*/::mlir::ArrayAttr res_attrs);
-  static void build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, ::mlir::TypeRange resultTypes, ::llvm::StringRef sym_name, ::mlir::FunctionType function_type, /*optional*/::mlir::ArrayAttr arg_attrs, /*optional*/::mlir::ArrayAttr res_attrs);
-  static void build(::mlir::OpBuilder &, ::mlir::OperationState &odsState, ::mlir::TypeRange resultTypes, ::mlir::ValueRange operands, ::llvm::ArrayRef<::mlir::NamedAttribute> attributes = {});
+  static void build(::mlir::OpBuilder &odsBuilder, ::mlir::OperationState &odsState, StringRef name, FunctionType type, ArrayRef<NamedAttribute> attrs = {});
+  static ::mlir::ParseResult parse(::mlir::OpAsmParser &parser, ::mlir::OperationState &result);
+  void print(::mlir::OpAsmPrinter &p);
   ::mlir::LogicalResult verifyInvariantsImpl();
   ::mlir::LogicalResult verifyInvariants();
 private:
@@ -585,17 +588,17 @@ private:
   }
 
 public:
-  // Method of FunctionOpInterface
-  mlir::Region * getCallableRegion() {return &getBody();}
-  // getFunctionType 函数会自动生成
-  // mlir::FunctionType getFunctionType();
+  //===------------------------------------------------------------------===//
+  // FunctionOpInterface Methods
+  //===------------------------------------------------------------------===//
 
-  // Method of CallableOpInterface
-  llvm::ArrayRef<mlir::Type> getArgumentTypes() {return getFunctionType().getInputs();}
-  llvm::ArrayRef<mlir::Type> getResultTypes() {return getFunctionType().getResults();}
+  /// Returns the argument types of this function.
+  ArrayRef<Type> getArgumentTypes() { return getFunctionType().getInputs(); }
 
-  // Method of RegionKindInterface
-  static mlir::RegionKind getRegionKind(unsigned idx) { return mlir::RegionKind::SSACFG; }
+  /// Returns the result types of this function.
+  ArrayRef<Type> getResultTypes() { return getFunctionType().getResults(); }
+
+  Region *getCallableRegion() { return &getBody(); }
 };
 } // namespace Lox
 } // namespace mlir

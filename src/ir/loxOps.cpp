@@ -29,6 +29,14 @@ void FuncOp::print(mlir::OpAsmPrinter &p) {
       getArgAttrsAttrName(), getResAttrsAttrName());
 }
 
+void FuncOp::build(mlir::OpBuilder &builder, mlir::OperationState &state,
+                   llvm::StringRef name, mlir::FunctionType type,
+                   llvm::ArrayRef<mlir::NamedAttribute> attrs) {
+  // FunctionOpInterface provides a convenient `build` method that will populate
+  // the state of our FuncOp, and create an entry block.
+  buildWithEntryBlock(builder, state, name, type, attrs, type.getInputs());
+}
+
 void CallOp::build(mlir::OpBuilder &builder, mlir::OperationState &state,
                    StringRef callee, ArrayRef<mlir::Value> arguments) {
   // Generic call always returns an unranked Tensor initially.
